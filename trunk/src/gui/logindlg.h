@@ -1,4 +1,4 @@
-﻿#ifndef LOGINDLG_H
+#ifndef LOGINDLG_H
 #define LOGINDLG_H
 
 #include <QDialog>
@@ -17,6 +17,10 @@ class LoginDlg : public QDialog
 public:
     explicit LoginDlg(QWidget *parent = 0);
     ~LoginDlg();
+
+private:
+    void initializeMember();
+    void connectSignalsAndSlots();
 
 private:
     Ui::LoginDlg *ui;

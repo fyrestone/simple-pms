@@ -2,14 +2,19 @@
 #define ABSTRACTTASK_H
 
 #include <QObject>
+#include <QVariant>
 #include <QtConcurrentRun>
 #include <QFutureWatcher>
 
+class QStandardItemModel;
+
 namespace DataEngine
 {
-    enum Tasks              ///  任务枚举
+    enum Tasks                  ///  任务枚举
     {
-        CreateTable = 3     ///< 创建表
+        InitializeDB,           ///< 创建数据库连接->创建表->填充初始化数据
+        Login,                  ///< 登陆
+        FillAccountsListModel   ///< 填充账号列表模型
     };
 
     class AbstractBaseTask : public QObject
@@ -76,13 +81,34 @@ namespace DataEngine
         emit finished(name, QVariant(watcher.result()));
     }
 
-    class CreateTableTask : public AbstractTask<CreateTable, bool>
+    class InitializeDBTask : public AbstractTask<InitializeDB, bool>
     {
     public:
-        void run();
+        void run(const QString &dbPath);
 
     private:
+        bool initializeDB(const QString &dbPath);
+        bool createConnection(const QString &dbPath);
         bool createTable();
+        bool fillInitialData();
+    };
+
+    class LoginTask : public AbstractTask<Login, bool>
+    {
+    public:
+        void run(const QString &id, const QString &pwd);
+
+    private:
+        bool login(const QString &id, const QString &pwd);
+    };
+
+    class FillAccountsListModelTask : public AbstractTask<FillAccountsListModel, bool>
+    {
+    public:
+        void run(QStandardItemModel *model, int max);
+
+    private:
+        bool fillAccountsListModel(QStandardItemModel *model, int max);
     };
 }
 
