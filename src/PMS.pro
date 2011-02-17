@@ -28,22 +28,23 @@ SOURCES += main.cpp\
     gui/mainwin.cpp \
     gui/tabpage.cpp \
     gui/aboutdlg.cpp \
-    logic/bussinesslogic.cpp \
     engine/dataengine.cpp \
     engine/abstracttask.cpp \
-    gui/logic/logindlg_p.cpp
+    gui/logic/logindlg_p.cpp \
+    context/context.cpp
 
 HEADERS  += pch.h \
     gui/logindlg.h \
     gui/mainwin.h \
     gui/tabpage.h \
     gui/aboutdlg.h \
-    logic/bussinesslogic.h \
     engine/dataengine.h \
     gui/logic/mainwin_p.h \
     gui/logic/logindlg_p.h \
     gui/logic/tabpage_p.h \
-    engine/abstracttask.h
+    engine/abstracttask.h \
+    context/permission.h \
+    context/context.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \
