@@ -5,6 +5,7 @@
 Q_GLOBAL_STATIC(Context, context)
 
 Context::Context()
+    :settings(QApplication::applicationDirPath() + "/config.ini", QSettings::IniFormat)
 {
 }
 

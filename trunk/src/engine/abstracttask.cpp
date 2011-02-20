@@ -57,7 +57,7 @@ bool InitializeDBTask::createTable()
                 "student_id INTEGER NOT NULL,"
                 "sex NCHAR(1) NOT NULL,"
                 "name NVARCHAR(15) NOT NULL,"
-                "in_school INTEGER NOT NULL,"
+                "in_school INTEGER NOT NULL DEFAULT 1,"
                 "info_id INTEGER,"
                 "grade_class_id INTEGER NOT NULL,"
                 "PRIMARY KEY(student_id),"
@@ -68,7 +68,7 @@ bool InitializeDBTask::createTable()
             "CREATE TABLE IF NOT EXISTS Exams ("
                 "exam_id INTEGER NOT NULL,"
                 "name NVARCHAR(20),"
-                "date DATETIME NOT NULL,"
+                "date DATE NOT NULL DEFAULT CURRENT_DATE,"
                 "PRIMARY KEY(exam_id))"
             );
     static const QString createCoursesTable = tr(
@@ -76,10 +76,10 @@ bool InitializeDBTask::createTable()
                 "course_id INTEGER NOT NULL,"
                 "exam_id INTEGER NOT NULL,"
                 "name NVARCHAR(10),"
-                "full_mark DECIMAL(10,2),"
-                "pass_rate FLOAT(1) CHECK(pass_rate >=0 and pass_rate <= 1),"
-                "good_rate FLOAT(1) CHECK(good_rate >=0 and good_rate <= 1),"
-                "excellent_rate FLOAT(1) CHECK(excellent_rate >=0 and excellent_rate <= 1),"
+                "full_mark DECIMAL(10,2) DEFAULT 100,"
+                "pass_rate FLOAT(2) DEFAULT 0.6 CHECK(pass_rate >=0 and pass_rate <= 1),"
+                "good_rate FLOAT(2) DEFAULT 0.8 CHECK(good_rate >=0 and good_rate <= 1),"
+                "excellent_rate FLOAT(2) DEFAULT 0.9 CHECK(excellent_rate >=0 and excellent_rate <= 1),"
                 "PRIMARY KEY(course_id),"
                 "FOREIGN KEY(exam_id) REFERENCES Exams(exam_id))"
             );
@@ -102,6 +102,7 @@ bool InitializeDBTask::createTable()
                 "account_id NVARCHAR(10) UNIQUE NOT NULL,"
                 "account_pwd NVARCHAR(10),"
                 "name NVARCHAR(10),"
+                "remember_pwd INTEGER NOT NULL DEFAULT 0,"
                 "permission BLOB NOT NULL,"
                 "login_time DATETIME DEFAULT (datetime(current_timestamp,'localtime')))"
             );
@@ -158,8 +159,8 @@ bool InitializeDBTask::fillInitialData()
                 "VALUES"
                 "(0, \"普通\")"
             );
-    static const QString fillAdminAccount = tr(
-            "INSERT OR REPLACE INTO Accounts"
+    static const QString fillAccount = tr(
+            "INSERT OR IGNORE INTO Accounts"
                 "(account_id, account_pwd, name, permission)"
                 "VALUES"
                 "(:id, :password, :username, :permission)"
@@ -182,7 +183,7 @@ bool InitializeDBTask::fillInitialData()
         adminPermission.setCreateExam(true);
         adminPermission.setEditScore(false);
 
-        if(sql.prepare(fillAdminAccount))
+        if(sql.prepare(fillAccount))
         {
             QDataStream ds(&byteArray, QIODevice::WriteOnly);
             ds << adminPermission;
@@ -194,6 +195,29 @@ bool InitializeDBTask::fillInitialData()
 
             result = !byteArray.isEmpty() && sql.exec();
         }
+
+        if(result)
+        {
+            byteArray.clear();
+
+            adminPermission.setCreateAccount(false);
+            adminPermission.setCreateClass(false);
+            adminPermission.setCreateExam(false);
+            adminPermission.setEditScore(false);
+
+            if(sql.prepare(fillAccount))
+            {
+                QDataStream ds(&byteArray, QIODevice::WriteOnly);
+                ds << adminPermission;
+
+                sql.bindValue(":id", "Guest");
+                sql.bindValue(":password", "123456");
+                sql.bindValue(":username", tr("游客"));
+                sql.bindValue(":permission", byteArray);
+
+                result = !byteArray.isEmpty() && sql.exec();
+            }
+        }
     }
 
     qDebug() << "CreateTableTask::fillInitialData -> " << sql.lastError().text();
@@ -201,12 +225,12 @@ bool InitializeDBTask::fillInitialData()
     return result;
 }
 
-void LoginTask::run(const QString &id, const QString &pwd)
+void LoginTask::run(const QString &id, const QString &pwd, bool save)
 {
-    watchFuture(QtConcurrent::run(this, &LoginTask::login, id, pwd));
+    watchFuture(QtConcurrent::run(this, &LoginTask::login, id, pwd, save));
 }
 
-bool LoginTask::login(const QString &id, const QString &pwd)
+bool LoginTask::login(const QString &id, const QString &pwd, bool save)
 {
     static const QString login = tr(
             "SELECT permission FROM Accounts WHERE "
@@ -228,6 +252,8 @@ bool LoginTask::login(const QString &id, const QString &pwd)
 
             if(result.isValid())
             {
+                success = updateSaveState(id, save);
+
                 QByteArray byteArray = result.toByteArray();
                 QDataStream ds(&byteArray, QIODevice::ReadOnly);
                 Permission permission;
@@ -240,9 +266,31 @@ bool LoginTask::login(const QString &id, const QString &pwd)
                         permission.canCreateExam() <<
                         permission.canEditScore();
 
-                success = true;
+                //success = true;
             }
         }
+    }
+
+    return success;
+}
+
+bool LoginTask::updateSaveState(const QString &id, bool save)
+{
+    static const QString updateSaveState = tr(
+            "UPDATE Accounts SET remember_pwd = :save "
+                "WHERE account_id = :id"
+            );
+
+    bool success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(updateSaveState))
+    {
+        sql.bindValue(":save", save ? 1 : 0);
+        sql.bindValue(":id", id);
+
+        success = sql.exec();
     }
 
     return success;
@@ -256,7 +304,12 @@ void FillAccountsListModelTask::run(QStandardItemModel *model, int max)
 bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model, int max)
 {
     static const QString listAccounts = tr(
-            "SELECT account_id, name FROM Accounts "
+            "SELECT account_id, name,"
+                "CASE WHEN remember_pwd = 0 "
+                    "THEN '' "
+                "ELSE account_pwd "
+                "END AS account_pwd , remember_pwd "
+            "FROM Accounts "
                 "ORDER BY login_time DESC LIMIT :max"
             );
 
@@ -276,11 +329,18 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
             {
                 QList<QStandardItem *> row;
 
-                row.append(new QStandardItem(sql.value(0).toString()));
-                row.append(new QStandardItem(sql.value(1).toString()));
+                row.append(new QStandardItem(sql.value(0).toString()));     //账号
+                row.append(new QStandardItem(sql.value(1).toString()));     //姓名
+                row.append(new QStandardItem(sql.value(2).toString()));     //密码
+                QStandardItem *savePWD = new QStandardItem();
+                savePWD->setData(sql.value(3), Qt::DisplayRole);
+                row.append(savePWD);                                        //是否记住密码
+                QStandardItem *autoLogin = new QStandardItem();
+                autoLogin->setData(0, Qt::DisplayRole);
+                row.append(autoLogin);                                      //是否自动登陆
 
                 model->appendRow(row);
-                qDebug() << model->rowCount() << sql.value(0) << sql.value(1);
+                qDebug() << model->rowCount() << sql.value(0) << sql.value(1) << sql.value(2);
             }
 
             success = true;

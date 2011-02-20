@@ -14,21 +14,31 @@ class LoginDlgPrivate : public QObject
     Q_DECLARE_PUBLIC(LoginDlg)
 
 public:
+    enum GetDataType{Password = 2, SaveCheckState = 3, LoginCheckState = 4};
     LoginDlgPrivate(LoginDlg *parent);
+
+    QVariant getDataFromIndex(GetDataType type, int index);
+    bool setDataFromIndex(GetDataType type, int index, const QVariant &value);
+
+public slots:
+    void login();
+
+public:
+    QTreeView *completerPopup;
+    QTreeView comboBoxView;
+    QStandardItemModel model;
+
+private:
+    void connectSignalsAndSlots();
+    void initializeComboBoxView();
+    void initializeCompleterPopup();
 
 private slots:
     void finished(DataEngine::Tasks name, const QVariant &result);
 
-private:
-    void initializeMember();
-    void connectSignalsAndSlots();
-
 private:      
     LoginDlg * const q_ptr;
     DataEngine::Task *task;
-    QTreeView treeView;
-    QStandardItemModel model;
-    QCompleter completer;
 };
 
 #endif // LOGINDLG_P_H
