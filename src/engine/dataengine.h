@@ -16,13 +16,14 @@ namespace DataEngine
         static Task *instance();
 
         void initializeDB(const QString &dbPath);
-        void login(const QString &id, const QString &pwd);
+        void login(const QString &id, const QString &pwd, bool save);
         void fillAccountsListModel(QStandardItemModel *model, int max = 10);
 
     signals:
         void finished(DataEngine::Tasks name, const QVariant &result);
 
     private:
+        Q_DISABLE_COPY(Task)
         InitializeDBTask initializeDBTask;
         LoginTask loginTask;
         FillAccountsListModelTask fillAccountsListModelTask;

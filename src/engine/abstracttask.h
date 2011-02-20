@@ -96,10 +96,11 @@ namespace DataEngine
     class LoginTask : public AbstractTask<Login, bool>
     {
     public:
-        void run(const QString &id, const QString &pwd);
+        void run(const QString &id, const QString &pwd, bool save);
 
     private:
-        bool login(const QString &id, const QString &pwd);
+        bool login(const QString &id, const QString &pwd, bool save);
+        bool updateSaveState(const QString &id, bool save);
     };
 
     class FillAccountsListModelTask : public AbstractTask<FillAccountsListModel, bool>

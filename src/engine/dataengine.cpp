@@ -25,9 +25,9 @@ void Task::initializeDB(const QString &dbPath)
     initializeDBTask.run(dbPath);
 }
 
-void Task::login(const QString &id, const QString &pwd)
+void Task::login(const QString &id, const QString &pwd, bool save)
 {
-    loginTask.run(id, pwd);
+    loginTask.run(id, pwd, save);
 }
 
 void Task::fillAccountsListModel(QStandardItemModel *model, int max)
