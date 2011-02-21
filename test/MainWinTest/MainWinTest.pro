@@ -17,7 +17,6 @@ SOURCES += main.cpp \
 HEADERS  += \
     ../../src/gui/mainwin.h \
     ../../src/gui/aboutdlg.h \
-    ../../src/gui/logic/mainwin_p.h \
     ../../src/pch.h
 
 FORMS    += \

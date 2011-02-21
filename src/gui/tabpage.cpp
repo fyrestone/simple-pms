@@ -1,11 +1,11 @@
-﻿#include "tabpage.h"
+#include "tabpage.h"
+#include "tabpage_p.h"
 #include "ui_tabpage.h"
-#include "logic/tabpage_p.h"
 
 TabPage::TabPage(QWidget *parent) :
     QFrame(parent),
-    ui(new Ui::TabPage),
-    d_ptr(new TabPagePrivate(this))
+    d_ptr(new TabPagePrivate(this)),
+    ui(new Ui::TabPage)
 {
     ui->setupUi(this);
 }

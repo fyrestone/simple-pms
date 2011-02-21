@@ -1,4 +1,4 @@
-﻿#ifndef TABPAGE_H
+#ifndef TABPAGE_H
 #define TABPAGE_H
 
 #include <QFrame>
@@ -20,9 +20,11 @@ public:
 protected:
     void changeEvent(QEvent *e);
 
+protected:
+    TabPagePrivate * const d_ptr;
+
 private:
     Ui::TabPage *ui;
-    TabPagePrivate * const d_ptr;
 };
 
 #endif // TABPAGE_H

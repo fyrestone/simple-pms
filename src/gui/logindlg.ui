@@ -98,7 +98,7 @@
       <number>25</number>
      </property>
      <item>
-      <widget class="QLabel" name="pwdLabel">
+      <widget class="QLabel" name="passwordLabel">
        <property name="minimumSize">
         <size>
          <width>35</width>
@@ -117,7 +117,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="pwdLineEdit">
+      <widget class="QLineEdit" name="passwordLineEdit">
        <property name="styleSheet">
         <string notr="true"/>
        </property>
@@ -150,14 +150,14 @@
       </spacer>
      </item>
      <item>
-      <widget class="QCheckBox" name="saveCheckBox">
+      <widget class="QCheckBox" name="savePassword">
        <property name="text">
         <string>记住密码</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QCheckBox" name="loginCheckBox">
+      <widget class="QCheckBox" name="autoLogin">
        <property name="text">
         <string>自动登录</string>
        </property>

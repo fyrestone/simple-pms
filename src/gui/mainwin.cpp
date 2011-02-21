@@ -1,11 +1,11 @@
-﻿#include "mainwin.h"
+#include "mainwin.h"
+#include "mainwin_p.h"
 #include "ui_mainwin.h"
-#include "logic/mainwin_p.h"
 
 MainWin::MainWin(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWin),
-    d_ptr(new MainWinPrivate(this))
+    d_ptr(new MainWinPrivate(this)),
+    ui(new Ui::MainWin)
 {
     ui->setupUi(this);
 

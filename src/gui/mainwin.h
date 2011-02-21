@@ -1,4 +1,4 @@
-﻿#ifndef MAINWIN_H
+#ifndef MAINWIN_H
 #define MAINWIN_H
 
 #include <QMainWindow>
@@ -21,13 +21,15 @@ public:
 protected:
     void changeEvent(QEvent *e);
 
+protected:
+    MainWinPrivate * const d_ptr;
+
 private:
     void setCustomApperance();
     void connectSignalsAndSlots();
 
 private:
     Ui::MainWin *ui;
-    MainWinPrivate * const d_ptr;
 };
 
 #endif // MAINWIN_H
