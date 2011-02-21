@@ -1,12 +1,112 @@
 #include "logindlg.h"
+#include "logindlg_p.h"
 #include "ui_logindlg.h"
-#include "logic/logindlg_p.h"
 #include "../context/context.h"
+
+LoginDlgPrivate::LoginDlgPrivate()
+    : task(DataEngine::Task::instance()),
+    completerPopup(new QTreeView)
+{
+    connect(task, SIGNAL(finished(DataEngine::Tasks,QVariant)),
+            this, SLOT(finished(DataEngine::Tasks,QVariant)));
+
+    task->initializeDB("data.db"); //初始化数据库
+}
+
+QString LoginDlgPrivate::passwordFromModel(int index) const
+{
+    return model.data(model.index(index, 2)).toString();
+}
+
+void LoginDlgPrivate::setPasswordToModel(int index, const QString &pwd)
+{
+    (void)model.setData(model.index(index, 2), pwd);
+}
+
+bool LoginDlgPrivate::savePasswordFromModel(int index) const
+{
+    return model.data(model.index(index, 3)).toBool();
+}
+
+void LoginDlgPrivate::setSavePasswordToModel(int index, bool state)
+{
+     (void)model.setData(model.index(index, 3), state);
+}
+
+bool LoginDlgPrivate::autoLoginFromModel(int index) const
+{
+    return model.data(model.index(index, 4)).toBool();
+}
+
+void LoginDlgPrivate::setAutoLoginToModel(int index, bool state)
+{
+    (void)model.setData(model.index(index, 4), state);
+}
+
+void LoginDlgPrivate::finished(DataEngine::Tasks name, const QVariant &result)
+{
+    switch(name)
+    {
+    case DataEngine::InitializeDB:
+        if(result.type() == QVariant::Bool && result.toBool())
+            task->fillAccountsListModel(&model);    //填充账户列表模型
+        break;
+    case DataEngine::Login:
+        if(result.type() == QVariant::Bool && result.toBool())
+            emit logined(true);     //登陆成功
+        else
+            emit logined(false);    //登陆失败
+        break;
+    case DataEngine::FillAccountsListModel:
+        if(result.type() == QVariant::Bool && result.toBool())
+        {
+            Q_ASSERT_X(model.columnCount() == 5,    //条件
+                       "LoginDlgPrivate::finished", //位置
+                       "Filled Acount List Model"); //原因
+
+            initializeComboBoxView();
+            initializeCompleterPopup();
+
+            emit ready(); //数据加载完毕
+        }
+        break;
+    }
+
+    qDebug() << "finished with:" << name << result;
+}
+
+void LoginDlgPrivate::initializeComboBoxView()
+{
+    comboBoxView.reset();
+    comboBoxView.setRootIsDecorated(false);                                   //隐藏根
+    comboBoxView.setHeaderHidden(true);                                       //隐藏表头
+    comboBoxView.hideColumn(2);                                               //隐藏密码列
+    comboBoxView.hideColumn(3);                                               //隐藏是否保存密码列
+    comboBoxView.hideColumn(4);                                               //隐藏是否自动登录列
+    comboBoxView.setSelectionBehavior(QAbstractItemView::SelectRows);         //按行选择
+    comboBoxView.header()->setStretchLastSection(false);                      //禁止扩展最后一列
+    comboBoxView.header()->setResizeMode(0, QHeaderView::Stretch);            //ID列扩展
+    comboBoxView.header()->setResizeMode(1, QHeaderView::ResizeToContents);   //姓名列收缩
+}
+
+void LoginDlgPrivate::initializeCompleterPopup()
+{
+    completerPopup->reset();
+    completerPopup->setRootIsDecorated(false);                                //隐藏根
+    completerPopup->setHeaderHidden(true);                                    //隐藏表头
+    completerPopup->hideColumn(2);                                            //隐藏密码列
+    completerPopup->hideColumn(3);                                            //隐藏是否保存密码列
+    completerPopup->hideColumn(4);                                            //隐藏是否自动登录列
+    completerPopup->setSelectionBehavior(QAbstractItemView::SelectRows);      //按行选择
+    completerPopup->header()->setStretchLastSection(false);                   //禁止扩展最后一列
+    completerPopup->header()->setResizeMode(0, QHeaderView::Stretch);         //ID列扩展
+    completerPopup->header()->setResizeMode(1, QHeaderView::ResizeToContents);//姓名列收缩
+}
 
 LoginDlg::LoginDlg(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LoginDlg),
-    d_ptr(new LoginDlgPrivate(this))
+    d(new LoginDlgPrivate)
 {
     ui->setupUi(this);
     initializeMember();
@@ -15,15 +115,12 @@ LoginDlg::LoginDlg(QWidget *parent) :
 
 LoginDlg::~LoginDlg()
 {
-    save();
     delete ui;
-    delete d_ptr;
+    delete d;
 }
 
 void LoginDlg::initializeMember()
 {
-    Q_D(LoginDlg);
-
     ui->idComboBox->setModel(&d->model);
     ui->idComboBox->setView(&d->comboBoxView);
     ui->idComboBox->completer()->setCompletionMode(QCompleter::PopupCompletion);
@@ -32,12 +129,13 @@ void LoginDlg::initializeMember()
 
 void LoginDlg::connectSignalsAndSlots()
 {
-    connect(ui->loginCheckBox, SIGNAL(clicked(bool)), this, SLOT(setAutoLoginCheck(bool)));
-    connect(ui->saveCheckBox, SIGNAL(clicked(bool)), this, SLOT(setSavePWDCheck(bool)));
-    connect(ui->idComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateAutoLoginCheck(int)));
-    connect(ui->idComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateSavePWDCheck(int)));
-    connect(ui->idComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updatePWD(int)));
-    connect(ui->loginButton, SIGNAL(clicked()), d_ptr, SLOT(login()));
+    connect(ui->idComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update(int)));
+    connect(ui->savePassword, SIGNAL(clicked(bool)), this, SLOT(updateSavePassword(bool)));
+    connect(ui->autoLogin, SIGNAL(clicked(bool)), this, SLOT(updateAutoLogin(bool)));
+    connect(ui->loginButton, SIGNAL(clicked()), this, SLOT(login()));
+
+    connect(d, SIGNAL(ready()), this, SLOT(recoverState()));
+    connect(d, SIGNAL(logined(bool)), this, SLOT(afterLogin(bool)));
 }
 
 void LoginDlg::save() const
@@ -46,94 +144,86 @@ void LoginDlg::save() const
 
     settings.beginGroup(tr("Login"));
     settings.setValue(tr("LastAccount"), ui->idComboBox->currentText());
-    settings.setValue(tr("AutoLogin"), ui->loginCheckBox->isChecked());
+    settings.setValue(tr("AutoLogin"), ui->autoLogin->isChecked());
     settings.endGroup();
 }
 
 void LoginDlg::load()
 {
-    Q_D(LoginDlg);
-
     QSettings &settings = Context::instance()->curAppSettings();
 
     settings.beginGroup(tr("Login"));
-    ui->idComboBox->setCurrentIndex(ui->idComboBox->findText(settings.value(tr("LastAccount")).toString()));
-    if(d->getDataFromIndex(LoginDlgPrivate::SaveCheckState, ui->idComboBox->currentIndex()).toBool())
     {
-        bool autoLogin = settings.value(tr("AutoLogin")).toBool();
+        QString lastAccount = settings.value(tr("LastAccount")).toString(); //最后一次账户
+        int index = ui->idComboBox->findText(lastAccount);                  //对应于ComboBox的index
 
-        ui->loginCheckBox->setChecked(autoLogin);
-        d->setDataFromIndex(LoginDlgPrivate::LoginCheckState,
-                            ui->idComboBox->currentIndex(),
-                            autoLogin);
+        /* 设置idComboBox */
+        ui->idComboBox->setCurrentIndex(index);
+
+        /* 若保存密码为true，设置自动登录状态 */
+        if(d->savePasswordFromModel(index))
+        {
+            bool autoLogin = settings.value(tr("AutoLogin")).toBool();
+
+            ui->autoLogin->setChecked(autoLogin);
+            d->setAutoLoginToModel(index, autoLogin);
+        }
     }
     settings.endGroup();
 }
 
-bool LoginDlg::isSavePWD() const
+void LoginDlg::update(int index)
 {
-    return ui->saveCheckBox->isChecked();
+    ui->passwordLineEdit->setText(d->passwordFromModel(index));
+    ui->savePassword->setChecked(d->savePasswordFromModel(index));
+    ui->autoLogin->setChecked(d->autoLoginFromModel(index));
 }
 
-bool LoginDlg::isAutoLogin() const
+void LoginDlg::updateAutoLogin(bool state)
 {
-    return ui->loginCheckBox->isChecked();
-}
+    /* 更新state到对应autoLogin的model */
+    d->setAutoLoginToModel(ui->idComboBox->currentIndex(), state);
 
-QString LoginDlg::id() const
-{
-    return ui->idComboBox->currentText();
-}
-
-QString LoginDlg::pwd() const
-{
-    return ui->pwdLineEdit->text();
-}
-
-void LoginDlg::setAutoLoginCheck(bool state)
-{
-    Q_D(LoginDlg);
-
-    d->setDataFromIndex(LoginDlgPrivate::LoginCheckState, ui->idComboBox->currentIndex(), state);
+    /* 自动登录为true则要设置保存密码为true */
     if(state)
     {
-        ui->saveCheckBox->setChecked(true);
-        d->setDataFromIndex(LoginDlgPrivate::SaveCheckState, ui->idComboBox->currentIndex(), true);
+        ui->savePassword->setChecked(true);
+        d->setSavePasswordToModel(ui->idComboBox->currentIndex(), true);
     }
 }
 
-void LoginDlg::setSavePWDCheck(bool state)
+void LoginDlg::updateSavePassword(bool state)
 {
-    Q_D(LoginDlg);
+    /* 更新state到对应savePassword的model */
+    d->setSavePasswordToModel(ui->idComboBox->currentIndex(), state);
 
-    d->setDataFromIndex(LoginDlgPrivate::SaveCheckState, ui->idComboBox->currentIndex(), state);
+    /* 保存密码为false则要设置自动登录为false */
     if(!state)
     {
-        ui->loginCheckBox->setChecked(false);
-        d->setDataFromIndex(LoginDlgPrivate::LoginCheckState, ui->idComboBox->currentIndex(), false);
+        ui->autoLogin->setChecked(false);
+        d->setAutoLoginToModel(ui->idComboBox->currentIndex(), false);
     }
 }
 
-void LoginDlg::updateAutoLoginCheck(int index)
+void LoginDlg::afterLogin(bool success)
 {
-    Q_D(LoginDlg);
+    if(success) save();//若登陆成功，保存设置
 
-    QVariant state = d->getDataFromIndex(LoginDlgPrivate::LoginCheckState, index);
-    ui->loginCheckBox->setChecked(state.toBool());
+    qDebug() << "login:" << success;
 }
 
-void LoginDlg::updateSavePWDCheck(int index)
+void LoginDlg::recoverState()
 {
-    Q_D(LoginDlg);
+    load();//加载设置
 
-    QVariant state = d->getDataFromIndex(LoginDlgPrivate::SaveCheckState, index);
-    ui->saveCheckBox->setChecked(state.toBool());
+    if(ui->autoLogin->isChecked()) login();//若自动登录为true，登录
 }
 
-void LoginDlg::updatePWD(int index)
+void LoginDlg::login()
 {
-    Q_D(LoginDlg);
+    QString id = ui->idComboBox->currentText();         //账号
+    QString pwd = ui->passwordLineEdit->text();         //密码
+    bool savePassword = ui->savePassword->isChecked();  //是否保存密码
 
-    QVariant pwd = d->getDataFromIndex(LoginDlgPrivate::Password, index);
-    ui->pwdLineEdit->setText(pwd.toString());
+    d->task->login(id, pwd, savePassword);
 }

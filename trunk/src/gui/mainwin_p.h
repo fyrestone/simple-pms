@@ -3,7 +3,7 @@
 
 #include <QtCore/QObject>   /* Q_DECLARE_PUBLIC使用 */
 #include <QPushButton>      /* addTabButton/delTabButton */
-#include "../aboutdlg.h"    /* AboutDlg使用 */
+#include "aboutdlg.h"       /* AboutDlg使用 */
 
 class MainWinPrivate
 {

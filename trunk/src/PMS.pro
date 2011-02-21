@@ -30,7 +30,6 @@ SOURCES += main.cpp\
     gui/aboutdlg.cpp \
     engine/dataengine.cpp \
     engine/abstracttask.cpp \
-    gui/logic/logindlg_p.cpp \
     context/context.cpp
 
 HEADERS  += pch.h \
@@ -39,12 +38,12 @@ HEADERS  += pch.h \
     gui/tabpage.h \
     gui/aboutdlg.h \
     engine/dataengine.h \
-    gui/logic/mainwin_p.h \
-    gui/logic/logindlg_p.h \
-    gui/logic/tabpage_p.h \
     engine/abstracttask.h \
     context/permission.h \
-    context/context.h
+    context/context.h \
+    gui/tabpage_p.h \
+    gui/mainwin_p.h \
+    gui/logindlg_p.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \

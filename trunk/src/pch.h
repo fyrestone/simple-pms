@@ -1,11 +1,9 @@
 #ifndef PCH_H
 #define PCH_H
 
+#include <QtCore>
 #include <QtGui>
-#include <QPushButton>
-#include <QPlastiqueStyle>
-#include <QtPlugin>
-#include <QCompleter>
+#include <QtSql>
 
 Q_IMPORT_PLUGIN(qcncodecs)
 Q_IMPORT_PLUGIN(qsqlite)

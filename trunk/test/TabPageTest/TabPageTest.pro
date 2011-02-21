@@ -15,7 +15,6 @@ SOURCES += main.cpp \
 
 HEADERS  += \
     ../../src/gui/tabpage.h \
-    ../../src/gui/logic/tabpage_p.h
 
 FORMS    += \
     ../../src/gui/tabpage.ui
