@@ -4,6 +4,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QStandardItemModel>
+#include <QTreeWidgetItem>
 
 using namespace DataEngine;
 
@@ -45,11 +46,10 @@ bool InitializeDBTask::createTable()
            );
     static const QString createGradeClassTable = tr(
             "CREATE TABLE IF NOT EXISTS GradeClass ("
-                "grade_class_id INTEGER NOT NULL,"
+                "grade_class_id INTEGER PRIMARY KEY,"
                 "grade INTEGER NOT NULL,"
                 "class INTEGER NOT NULL,"
                 "class_type_id INTEGER NOT NULL DEFAULT 0,"
-                "PRIMARY KEY(grade_class_id),"
                 "FOREIGN KEY(class_type_id) REFERENCES ClassTypes(class_type_id))"
             );
     static const QString createStudentsTable = tr(
@@ -112,37 +112,46 @@ bool InitializeDBTask::createTable()
                 "minor_version INTEGER UNIQUE NOT NULL)"
             );
 
-    QSqlQuery sql(QSqlDatabase::database());
+    bool success = false;
 
-    bool result = sql.exec(createClassTypesTable);
+    QSqlDatabase db = QSqlDatabase::database();
 
-    if(result)
-        result = sql.exec(createGradeClassTable);
+    if(db.transaction())
+    {
+        QSqlQuery sql(db);
 
-    if(result)
-        result = sql.exec(createStudentsTable);
+        success = sql.exec(createClassTypesTable);
 
-    if(result)
-        result = sql.exec(createExamsTable);
+        if(success)
+            success = sql.exec(createGradeClassTable);
 
-    if(result)
-        result = sql.exec(createCoursesTable);
+        if(success)
+            success = sql.exec(createStudentsTable);
 
-    if(result)
-        result = sql.exec(createScoresTable);
+        if(success)
+            success = sql.exec(createExamsTable);
 
-    if(result)
-        result = sql.exec(createCourseSetTable);
+        if(success)
+            success = sql.exec(createCoursesTable);
 
-    if(result)
-        result = sql.exec(createAccountsTable);
+        if(success)
+            success = sql.exec(createScoresTable);
 
-    if(result)
-        result = sql.exec(createVersionTable);
+        if(success)
+            success = sql.exec(createCourseSetTable);
 
-    qDebug() << "CreateTableTask::createTable -> " << sql.lastError().text();
+        if(success)
+            success = sql.exec(createAccountsTable);
 
-    return result;
+        if(success)
+            success = sql.exec(createVersionTable);
+
+        success = db.commit();
+    }
+
+    qDebug() << "InitializeDBTask::createTable -> " << db.lastError().text();
+
+    return success;
 }
 
 bool InitializeDBTask::fillInitialData()
@@ -220,7 +229,7 @@ bool InitializeDBTask::fillInitialData()
         }
     }
 
-    qDebug() << "CreateTableTask::fillInitialData -> " << sql.lastError().text();
+    qDebug() << "InitializeDBTask::fillInitialData -> " << sql.lastError().text();
 
     return result;
 }
@@ -329,6 +338,8 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
             {
                 QList<QStandardItem *> row;
 
+                /* 线程中创建的对象可以在主线程中安全删除 */
+
                 row.append(new QStandardItem(sql.value(0).toString()));     //账号
                 row.append(new QStandardItem(sql.value(1).toString()));     //姓名
                 row.append(new QStandardItem(sql.value(2).toString()));     //密码
@@ -347,7 +358,78 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
         }
     }
 
-    qDebug() << "ListAccountsTask::listAccounts -> " << sql.lastError().text();
+    qDebug() << "FillAccountsListModelTask::fillAccountsListModel -> " << sql.lastError().text();
+
+    return success;
+}
+
+void FillClassTreeWidgetTask::run(QTreeWidget *widget)
+{
+    watchFuture(QtConcurrent::run(this, &FillClassTreeWidgetTask::fillClassTreeWidget, widget));
+}
+
+bool FillClassTreeWidgetTask::fillClassTreeWidget(QTreeWidget *widget)
+{
+    static const QString gradeClassQuery = tr(
+            "SELECT grade, class from GradeClass order by grade DESC, class ASC"
+            );
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.exec(gradeClassQuery))
+    {
+        QTreeWidgetItem *root  = new QTreeWidgetItem(); //根结点
+        QTreeWidgetItem *lastGradeItem = NULL;          //上次年级节点
+        int lastGradeNum = -1;                          //上次年级号
+
+        root->setText(0, tr("根"));
+        while(sql.next())
+        {
+            int gradeNum = sql.value(0).toInt();
+
+            if(gradeNum != lastGradeNum)
+            {
+                lastGradeNum = gradeNum;
+                lastGradeItem = new QTreeWidgetItem(root);
+                lastGradeItem->setText(0, QString::number(gradeNum));
+            }
+
+            (new QTreeWidgetItem(lastGradeItem))->setText(0, sql.value(1).toString());
+        }
+
+        widget->clear();
+        widget->addTopLevelItem(root);
+    }
+
+    qDebug() << "FillClassTreeWidgetTask::fillClassTreeWidget -> " << sql.lastError().text();
+
+    return true;
+}
+
+void InsertGradeClassTask::run(int gradeNum, int classNum, int classType)
+{
+    watchFuture(QtConcurrent::run(this, &InsertGradeClassTask::insertGradeClass, gradeNum, classNum, classType));
+}
+
+bool InsertGradeClassTask::insertGradeClass(int gradeNum, int classNum, int classType)
+{
+    static const QString insertGradeClass = tr(
+            "INSERT INTO GradeClass(grade, class, class_type_id) "
+                "VALUES (:grade, :class, :class_type_id)"
+            );
+
+    bool success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(insertGradeClass))
+    {
+        sql.bindValue(":grade", gradeNum);
+        sql.bindValue(":class", classNum);
+        sql.bindValue(":class_type_id", classType);
+
+        success = sql.exec();
+    }
 
     return success;
 }

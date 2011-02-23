@@ -6,8 +6,6 @@
 #include <QStandardItemModel>           /* 使用QStandardItemModel */
 #include "../engine/dataengine.h"       /* 使用Task */
 
-class LoginDlg;
-
 class LoginDlgPrivate : public QObject
 {
     Q_OBJECT
