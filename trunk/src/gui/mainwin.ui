@@ -63,7 +63,7 @@
       <string>导出到</string>
      </property>
      <property name="icon">
-      <iconset resource="Resource.qrc">
+      <iconset resource="../../Resource.qrc">
        <normaloff>:/Icon/image/table-export.png</normaloff>:/Icon/image/table-export.png</iconset>
      </property>
      <addaction name="toPDFAct"/>
@@ -123,11 +123,29 @@
       <number>0</number>
      </property>
      <item row="0" column="0">
-      <widget class="QTreeWidget" name="structureTreeWidget">
+      <widget class="QTreeWidget" name="classTreeWidget">
        <property name="font">
         <font>
          <family>宋体</family>
         </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QTreeView::item{height:25px}</string>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectItems</enum>
+       </property>
+       <property name="indentation">
+        <number>25</number>
+       </property>
+       <property name="rootIsDecorated">
+        <bool>false</bool>
+       </property>
+       <property name="uniformRowHeights">
+        <bool>true</bool>
+       </property>
+       <property name="animated">
+        <bool>true</bool>
        </property>
        <attribute name="headerVisible">
         <bool>false</bool>
@@ -188,7 +206,7 @@
   </widget>
   <action name="aboutAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/information.png</normaloff>:/Icon/image/information.png</iconset>
    </property>
    <property name="text">
@@ -197,7 +215,7 @@
   </action>
   <action name="printAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/printer.png</normaloff>:/Icon/image/printer.png</iconset>
    </property>
    <property name="text">
@@ -209,7 +227,7 @@
   </action>
   <action name="toPDFAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/page_white_acrobat.png</normaloff>:/Icon/image/page_white_acrobat.png</iconset>
    </property>
    <property name="text">
@@ -218,7 +236,7 @@
   </action>
   <action name="toExcelAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/page_excel.png</normaloff>:/Icon/image/page_excel.png</iconset>
    </property>
    <property name="text">
@@ -227,7 +245,7 @@
   </action>
   <action name="exitAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/exit.png</normaloff>:/Icon/image/exit.png</iconset>
    </property>
    <property name="text">
@@ -263,7 +281,7 @@
   </action>
   <action name="copyAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/copy.png</normaloff>:/Icon/image/copy.png</iconset>
    </property>
    <property name="text">
@@ -272,7 +290,7 @@
   </action>
   <action name="pasteAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/paste.png</normaloff>:/Icon/image/paste.png</iconset>
    </property>
    <property name="text">
@@ -281,7 +299,7 @@
   </action>
   <action name="cutAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/cut.png</normaloff>:/Icon/image/cut.png</iconset>
    </property>
    <property name="text">
@@ -290,7 +308,7 @@
   </action>
   <action name="delAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/delete.png</normaloff>:/Icon/image/delete.png</iconset>
    </property>
    <property name="text">
@@ -299,7 +317,7 @@
   </action>
   <action name="configAct">
    <property name="icon">
-    <iconset resource="Resource.qrc">
+    <iconset resource="../../Resource.qrc">
      <normaloff>:/Icon/image/gear.png</normaloff>:/Icon/image/gear.png</iconset>
    </property>
    <property name="text">
@@ -308,7 +326,9 @@
   </action>
  </widget>
  <resources>
-  <include location="Resource.qrc"/>
+  <include location="../../Resource.qrc"/>
+  <include location="../../Resource.qrc"/>
+  <include location="../../Resource.qrc"/>
  </resources>
  <connections/>
 </ui>

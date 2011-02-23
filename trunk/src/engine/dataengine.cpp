@@ -34,3 +34,13 @@ void Task::fillAccountsListModel(QStandardItemModel *model, int max)
 {
     fillAccountsListModelTask.run(model, max);
 }
+
+void Task::fillClassTreeWidget(QTreeWidget *widget)
+{
+    fillClassTreeWidgetTask.run(widget);
+}
+
+void Task::insertGradeClass(int gradeNum, int classNum, int classType)
+{
+    insertGradeClassTask.run(gradeNum, classNum, classType);
+}

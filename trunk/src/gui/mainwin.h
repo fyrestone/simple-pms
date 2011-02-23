@@ -12,7 +12,6 @@ class MainWinPrivate;
 class MainWin : public QMainWindow
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(MainWin)
 
 public:
     explicit MainWin(QWidget *parent = 0);
@@ -21,15 +20,14 @@ public:
 protected:
     void changeEvent(QEvent *e);
 
-protected:
-    MainWinPrivate * const d_ptr;
-
 private:
     void setCustomApperance();
     void connectSignalsAndSlots();
 
 private:
-    Ui::MainWin *ui;
+    Q_DISABLE_COPY(MainWin)
+    Ui::MainWin * const ui;
+    MainWinPrivate * const d;
 };
 
 #endif // MAINWIN_H

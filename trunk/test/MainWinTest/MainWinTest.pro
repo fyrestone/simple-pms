@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui sql
 
 TARGET = MainWinTest
 TEMPLATE = app
@@ -12,12 +12,17 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     ../../src/gui/mainwin.cpp \
-    ../../src/gui/aboutdlg.cpp
+    ../../src/gui/aboutdlg.cpp \
+    ../../src/engine/dataengine.cpp \
+    ../../src/engine/abstracttask.cpp
 
 HEADERS  += \
     ../../src/gui/mainwin.h \
     ../../src/gui/aboutdlg.h \
-    ../../src/pch.h
+    ../../src/pch.h \
+    ../../src/gui/mainwin_p.h \
+    ../../src/engine/dataengine.h \
+    ../../src/engine/abstracttask.h
 
 FORMS    += \
     ../../src/gui/mainwin.ui \

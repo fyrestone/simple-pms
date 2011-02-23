@@ -7,6 +7,7 @@
 #include <QFutureWatcher>
 
 class QStandardItemModel;
+class QTreeWidget;
 
 namespace DataEngine
 {
@@ -14,7 +15,9 @@ namespace DataEngine
     {
         InitializeDB,           ///< 创建数据库连接->创建表->填充初始化数据
         Login,                  ///< 登陆
-        FillAccountsListModel   ///< 填充账号列表模型
+        FillAccountsListModel,  ///< 填充账号列表模型
+        FillClassTreeWidget,    ///< 填充班级树模型
+        InsertGradeClass        ///< 插入年级、班级
     };
 
     class AbstractBaseTask : public QObject
@@ -110,6 +113,24 @@ namespace DataEngine
 
     private:
         bool fillAccountsListModel(QStandardItemModel *model, int max);
+    };
+
+    class FillClassTreeWidgetTask : public AbstractTask<FillClassTreeWidget, bool>
+    {
+    public:
+        void run(QTreeWidget *widget);
+
+    private:
+        bool fillClassTreeWidget(QTreeWidget *widget);
+    };
+
+    class InsertGradeClassTask : public AbstractTask<InsertGradeClass, bool>
+    {
+    public:
+        void run(int gradeNum, int classNum, int classType);
+
+    private:
+        bool insertGradeClass(int gradeNum, int classNum, int classType);
     };
 }
 

@@ -1,36 +1,29 @@
 #ifndef MAINWIN_P_H
 #define MAINWIN_P_H
 
-#include <QtCore/QObject>   /* Q_DECLARE_PUBLIC使用 */
-#include <QPushButton>      /* addTabButton/delTabButton */
-#include "aboutdlg.h"       /* AboutDlg使用 */
+#include <QtCore/QObject>           /* 使用QObject */
+#include <QPushButton>              /* addTabButton/delTabButton */
+#include "aboutdlg.h"               /* 使用AboutDlg */
+#include "../engine/dataengine.h"   /* 使用Task */
 
-class MainWinPrivate
+class MainWinPrivate : public QObject
 {
-    Q_DECLARE_PUBLIC(MainWin)
+    Q_OBJECT
 
 public:
-    MainWinPrivate(MainWin *parent);
+    MainWinPrivate();
 
-private:
-    MainWin * const q_ptr;
+public:
+    DataEngine::Task *task;
     AboutDlg aboutDlg;
     QPushButton addTabButton;
     QPushButton delTabButton;
+
+private slots:
+    void finished(DataEngine::Tasks name, const QVariant &result);
+
+private:
+    Q_DISABLE_COPY(MainWinPrivate)
 };
-
-MainWinPrivate::MainWinPrivate(MainWin *parent)
-    :q_ptr(parent)
-{
-    QIcon addTabIcon, delTabIcon;
-
-    addTabIcon.addFile(QString(QObject::tr(":/Icon/image/add.png")), QSize(), QIcon::Normal, QIcon::Off);
-    addTabButton.setIcon(addTabIcon);
-    addTabButton.setFlat(true);
-
-    delTabIcon.addFile(QString(QObject::tr(":/Icon/image/delete.png")), QSize(), QIcon::Normal, QIcon::Off);
-    delTabButton.setIcon(delTabIcon);
-    delTabButton.setFlat(true);
-}
 
 #endif // MAINWIN_P_H

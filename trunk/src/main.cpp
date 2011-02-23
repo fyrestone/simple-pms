@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "gui/logindlg.h"
+#include "gui/mainwin.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,7 +20,10 @@ int main(int argc, char *argv[])
     QApplication::setStyle(new QPlastiqueStyle);//设置为PlastiqueStyle
 
     LoginDlg w;
-    w.show();
+    w.exec();
+
+    MainWin m;
+    m.show();
 
     return a.exec();
 }
