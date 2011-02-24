@@ -2,6 +2,7 @@
 #include "logindlg_p.h"
 #include "ui_logindlg.h"
 #include "../context/context.h"
+#include <QMessageBox>
 
 LoginDlgPrivate::LoginDlgPrivate()
     : task(DataEngine::Task::instance()),
@@ -207,7 +208,16 @@ void LoginDlg::updateSavePassword(bool state)
 
 void LoginDlg::afterLogin(bool success)
 {
-    if(success) save();//若登陆成功，保存设置
+    if(success)//若登陆成功
+    {
+        save();//保存设置
+        done(QDialog::Accepted);//退出对话框
+    }
+    else//若登陆失败
+    {
+        ui->passwordLineEdit->clear();//重置密码框
+        QMessageBox::information(this, tr("密码验证错误"), tr("您输入的密码不正确！"), QMessageBox::Ok);
+    }
 
     qDebug() << "login:" << success;
 }

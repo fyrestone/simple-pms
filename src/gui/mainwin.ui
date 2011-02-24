@@ -36,8 +36,8 @@
      <string>视图(&amp;V)</string>
     </property>
     <addaction name="toolBarAct"/>
-    <addaction name="structureAct"/>
-    <addaction name="statisticsAct"/>
+    <addaction name="classTreeAct"/>
+    <addaction name="statisticsTreeAct"/>
    </widget>
    <widget class="QMenu" name="helpMenu">
     <property name="title">
@@ -98,7 +98,7 @@
     </font>
    </property>
   </widget>
-  <widget class="QDockWidget" name="structureDockWidget">
+  <widget class="QDockWidget" name="classDockWidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
      <horstretch>0</horstretch>
@@ -263,15 +263,15 @@
     <string>工具栏</string>
    </property>
   </action>
-  <action name="structureAct">
+  <action name="classTreeAct">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>班级结构</string>
+    <string>导航栏</string>
    </property>
   </action>
-  <action name="statisticsAct">
+  <action name="statisticsTreeAct">
    <property name="checkable">
     <bool>true</bool>
    </property>

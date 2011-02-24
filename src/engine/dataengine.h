@@ -16,19 +16,20 @@ namespace DataEngine
         void initializeDB(const QString &dbPath);
         void login(const QString &id, const QString &pwd, bool save);
         void fillAccountsListModel(QStandardItemModel *model, int max = 10);
-        void fillClassTreeWidget(QTreeWidget *widget);
-        void insertGradeClass(int gradeNum, int classNum, int classType = 0);
+        void fillNavigationTree(QTreeWidget *widget, const QString &rootName);
+        void insertOrUpdateNavigationTree(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType);
 
     signals:
         void finished(DataEngine::Tasks name, const QVariant &result);
 
     private:
         Q_DISABLE_COPY(Task)
-        InitializeDBTask initializeDBTask;
-        LoginTask loginTask;
-        FillAccountsListModelTask fillAccountsListModelTask;
-        FillClassTreeWidgetTask fillClassTreeWidgetTask;
-        InsertGradeClassTask insertGradeClassTask;
+        InitializeDBTask                    initializeDBTask;
+        LoginTask                           loginTask;
+        FillAccountsListModelTask           fillAccountsListModelTask;
+        FillNavigationTreeTask              fillNavigationTreeTask;
+        InsertOrUpdateNavigationTreeTask    insertOrUpdateNavigationTreeTask;
+        //InsertOrUpdateClassTreeTask insertOrUpdateClassTreeTask;
     };
 }
 

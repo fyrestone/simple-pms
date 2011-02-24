@@ -19,6 +19,9 @@ public:
     QPushButton addTabButton;
     QPushButton delTabButton;
 
+signals:
+    void expandClassTree();
+
 private slots:
     void finished(DataEngine::Tasks name, const QVariant &result);
 

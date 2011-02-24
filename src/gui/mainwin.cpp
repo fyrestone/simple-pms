@@ -22,7 +22,12 @@ MainWinPrivate::MainWinPrivate()
 
 void MainWinPrivate::finished(DataEngine::Tasks name, const QVariant &result)
 {
-
+    switch(name)
+    {
+    case DataEngine::FillClassTreeWidget:
+        if(result.type() == QVariant::Bool && result.toBool())
+            emit expandClassTree();
+    }
 }
 
 MainWin::MainWin(QWidget *parent) :
@@ -42,6 +47,12 @@ MainWin::~MainWin()
     delete d;
 }
 
+void MainWin::initializeAndShow()
+{
+    initializeAll();
+    show();
+}
+
 void MainWin::changeEvent(QEvent *e)
 {
     QMainWindow::changeEvent(e);
@@ -54,6 +65,16 @@ void MainWin::changeEvent(QEvent *e)
     }
 }
 
+void MainWin::testSlot()
+{
+    d->task->insertOrUpdateNavigationTree(ui->classTreeWidget, 2006, 2, "fuck");
+}
+
+void MainWin::initializeAll()
+{
+    d->task->fillNavigationTree(ui->classTreeWidget, tr("驻马店第一初级中学"));
+}
+
 void MainWin::setCustomApperance()
 {
     ui->centralTabwidget->setCornerWidget(&d->addTabButton, Qt::TopLeftCorner);
@@ -64,6 +85,5 @@ void MainWin::setCustomApperance()
 void MainWin::connectSignalsAndSlots()
 {
     connect(ui->aboutAct, SIGNAL(triggered()), &d->aboutDlg, SLOT(exec()));
-    //d->task->insertGradeClass(2, 4);
-    d->task->fillClassTreeWidget(ui->classTreeWidget);
+    connect(d, SIGNAL(expandClassTree()), this, SLOT(testSlot()));
 }

@@ -11,13 +11,13 @@ class QTreeWidget;
 
 namespace DataEngine
 {
-    enum Tasks                  ///  任务枚举
+    enum Tasks                              ///  任务枚举
     {
-        InitializeDB,           ///< 创建数据库连接->创建表->填充初始化数据
-        Login,                  ///< 登陆
-        FillAccountsListModel,  ///< 填充账号列表模型
-        FillClassTreeWidget,    ///< 填充班级树模型
-        InsertGradeClass        ///< 插入年级、班级
+        InitializeDB,                       ///< 创建数据库连接->创建表->填充初始化数据
+        Login,                              ///< 登陆
+        FillAccountsListModel,              ///< 填充账号列表模型
+        FillClassTreeWidget,                ///< 填充班级树模型
+        InsertOrUpdateClassTreeWidget       ///< 插入年级、班级
     };
 
     class AbstractBaseTask : public QObject
@@ -49,7 +49,6 @@ namespace DataEngine
         void finishDispatcher();
 
     private:
-        static const Tasks name = N;
         QFutureWatcher<T> watcher;
     };
 
@@ -69,19 +68,18 @@ namespace DataEngine
     template<Tasks N, typename T>
     void AbstractTask<N, T>::watchFuture(const QFuture<T> &future)
     {
-        if(watcher.isRunning())
-        {
-            watcher.cancel();
-            watcher.waitForFinished();
-        }
-
+        /*
+            由于QtConcurrent::run返回的QFuture不支持中断、暂停以及进度报告，
+            这里为防止连续两个相同Task并发执行，只能先waitForFinished。
+        */
+        watcher.waitForFinished();
         watcher.setFuture(future);
     }
 
     template<Tasks N, typename T>
     void AbstractTask<N, T>::finishDispatcher()
     {
-        emit finished(name, QVariant(watcher.result()));
+        emit finished(N, QVariant(watcher.result()));
     }
 
     class InitializeDBTask : public AbstractTask<InitializeDB, bool>
@@ -103,7 +101,7 @@ namespace DataEngine
 
     private:
         bool login(const QString &id, const QString &pwd, bool save);
-        bool updateSaveState(const QString &id, bool save);
+        bool updateSaveStateAndLoginTime(const QString &id, bool save);
     };
 
     class FillAccountsListModelTask : public AbstractTask<FillAccountsListModel, bool>
@@ -115,22 +113,22 @@ namespace DataEngine
         bool fillAccountsListModel(QStandardItemModel *model, int max);
     };
 
-    class FillClassTreeWidgetTask : public AbstractTask<FillClassTreeWidget, bool>
+    class FillNavigationTreeTask : public AbstractTask<FillClassTreeWidget, bool>
     {
     public:
-        void run(QTreeWidget *widget);
+        void run(QTreeWidget *widget, const QString &rootName);
 
     private:
-        bool fillClassTreeWidget(QTreeWidget *widget);
+        bool fillNavigationTree(QTreeWidget *widget, const QString &rootName);
     };
 
-    class InsertGradeClassTask : public AbstractTask<InsertGradeClass, bool>
+    class InsertOrUpdateNavigationTreeTask : public AbstractTask<InsertOrUpdateClassTreeWidget, bool>
     {
     public:
-        void run(int gradeNum, int classNum, int classType);
+        void run(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType);
 
     private:
-        bool insertGradeClass(int gradeNum, int classNum, int classType);
+        bool insertOrUpdateNavigationTree(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType);
     };
 }
 

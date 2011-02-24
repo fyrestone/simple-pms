@@ -13,6 +13,8 @@ Task::Task()
             this, SIGNAL(finished(DataEngine::Tasks,QVariant)));
     connect(&fillAccountsListModelTask, SIGNAL(finished(DataEngine::Tasks,QVariant)),
             this, SIGNAL(finished(DataEngine::Tasks,QVariant)));
+    connect(&fillNavigationTreeTask, SIGNAL(finished(DataEngine::Tasks,QVariant)),
+            this, SIGNAL(finished(DataEngine::Tasks,QVariant)));
 }
 
 Task *Task::instance()
@@ -35,12 +37,17 @@ void Task::fillAccountsListModel(QStandardItemModel *model, int max)
     fillAccountsListModelTask.run(model, max);
 }
 
-void Task::fillClassTreeWidget(QTreeWidget *widget)
+void Task::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
 {
-    fillClassTreeWidgetTask.run(widget);
+    fillNavigationTreeTask.run(widget, rootName);
 }
 
-void Task::insertGradeClass(int gradeNum, int classNum, int classType)
+void Task::insertOrUpdateNavigationTree(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType)
 {
-    insertGradeClassTask.run(gradeNum, classNum, classType);
+    insertOrUpdateNavigationTreeTask.run(widget, gradeNum, classNum, classType);
 }
+
+//void Task::insertGradeClass(int gradeNum, int classNum, int classType)
+//{
+//    insertGradeClassTask.run(gradeNum, classNum, classType);
+//}
