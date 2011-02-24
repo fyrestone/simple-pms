@@ -1,10 +1,10 @@
 #include "abstracttask.h"
-#include "../context/permission.h"
+#include "../context/context.h"
+#include "../gui/custom/navigationitem.h"
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QStandardItemModel>
-#include <QTreeWidgetItem>
 
 using namespace DataEngine;
 
@@ -38,30 +38,23 @@ bool InitializeDBTask::createConnection(const QString &dbPath)
 
 bool InitializeDBTask::createTable()
 {
-    static const QString createClassTypesTable = tr(
-            "CREATE TABLE IF NOT EXISTS ClassTypes ("
-                "class_type_id INTEGER NOT NULL,"
-                "name NVARCHAR(20),"
-                "PRIMARY KEY(class_type_id))"
-           );
     static const QString createGradeClassTable = tr(
             "CREATE TABLE IF NOT EXISTS GradeClass ("
-                "grade_class_id INTEGER PRIMARY KEY,"
                 "grade INTEGER NOT NULL,"
                 "class INTEGER NOT NULL,"
-                "class_type_id INTEGER NOT NULL DEFAULT 0,"
-                "FOREIGN KEY(class_type_id) REFERENCES ClassTypes(class_type_id))"
+                "type NVARCHAR(20) DEFAULT \"普通班\","
+                "PRIMARY KEY(grade, class))"
             );
     static const QString createStudentsTable = tr(
             "CREATE TABLE IF NOT EXISTS Students ("
                 "student_id INTEGER NOT NULL,"
                 "sex NCHAR(1) NOT NULL,"
                 "name NVARCHAR(15) NOT NULL,"
+                "grade INTEGER,"
+                "class INTEGER,"
                 "in_school INTEGER NOT NULL DEFAULT 1,"
-                "info_id INTEGER,"
-                "grade_class_id INTEGER NOT NULL,"
                 "PRIMARY KEY(student_id),"
-                "FOREIGN KEY(grade_class_id) REFERENCES GradeClass(grade_class_id),"
+                "FOREIGN KEY(grade, class) REFERENCES GradeClass(grade, class),"
                 "CHECK(sex IN ('男', '女')))"
             );
     static const QString createExamsTable = tr(
@@ -93,6 +86,10 @@ bool InitializeDBTask::createTable()
                 "FOREIGN KEY(course_id) REFERENCES Courses(Course_id),"
                 "FOREIGN KEY(exam_id) REFERENCES Exams(exam_id))"
             );
+    static const QString createClassTypeSetTable = tr(
+            "CREATE TABLE IF NOT EXISTS ClassTypeSet ("
+                "name NVARCHAR(20))"
+            );
     static const QString createCourseSetTable = tr(
             "CREATE TABLE IF NOT EXISTS CourseSet ("
                 "name NVARCHAR(10))"
@@ -102,7 +99,7 @@ bool InitializeDBTask::createTable()
                 "account_id NVARCHAR(10) UNIQUE NOT NULL,"
                 "account_pwd NVARCHAR(10),"
                 "name NVARCHAR(10),"
-                "remember_pwd INTEGER NOT NULL DEFAULT 0,"
+                "save_password INTEGER NOT NULL DEFAULT 0,"
                 "permission BLOB NOT NULL,"
                 "login_time DATETIME DEFAULT (datetime(current_timestamp,'localtime')))"
             );
@@ -120,10 +117,7 @@ bool InitializeDBTask::createTable()
     {
         QSqlQuery sql(db);
 
-        success = sql.exec(createClassTypesTable);
-
-        if(success)
-            success = sql.exec(createGradeClassTable);
+        success = sql.exec(createGradeClassTable);
 
         if(success)
             success = sql.exec(createStudentsTable);
@@ -138,6 +132,9 @@ bool InitializeDBTask::createTable()
             success = sql.exec(createScoresTable);
 
         if(success)
+            success = sql.exec(createClassTypeSetTable);
+
+        if(success)
             success = sql.exec(createCourseSetTable);
 
         if(success)
@@ -146,10 +143,13 @@ bool InitializeDBTask::createTable()
         if(success)
             success = sql.exec(createVersionTable);
 
-        success = db.commit();
-    }
+        if(success)
+            success = db.commit();
+        else
+            (void)db.rollback();
 
-    qDebug() << "InitializeDBTask::createTable -> " << db.lastError().text();
+        qDebug() << "InitializeDBTask::createTable -> " << sql.lastError().text();
+    }
 
     return success;
 }
@@ -158,80 +158,86 @@ bool InitializeDBTask::fillInitialData()
 {
     static const QString fillVersionNumber = tr(
             "INSERT OR REPLACE INTO Version"
-                "(major_version, minor_version)"
-                "VALUES"
-                "(2, 0)"
-            );
-    static const QString fillNormalClassType = tr(
-            "INSERT OR REPLACE INTO ClassTypes"
-                "(class_type_id, name)"
-                "VALUES"
-                "(0, \"普通\")"
+            "(major_version, minor_version)"
+            "VALUES"
+            "(2, 0)"
             );
     static const QString fillAccount = tr(
             "INSERT OR IGNORE INTO Accounts"
-                "(account_id, account_pwd, name, permission)"
-                "VALUES"
-                "(:id, :password, :username, :permission)"
+            "(account_id, account_pwd, name, permission)"
+            "VALUES"
+            "(:id, :password, :username, :permission)"
             );
 
-    QSqlQuery sql(QSqlDatabase::database());
+    bool success = false;
 
-    bool result = sql.exec(fillVersionNumber);
+    QSqlDatabase db = QSqlDatabase::database();
 
-    if(result)
-        result = sql.exec(fillNormalClassType);
-
-    if(result)
+    if(db.transaction())
     {
-        QByteArray byteArray;
-        Permission adminPermission;
+        QSqlQuery sql(db);
+        QByteArray byteArray;           //Permission序列化的字节流
+        Permission permission;
 
-        adminPermission.setCreateAccount(true);
-        adminPermission.setCreateClass(false);
-        adminPermission.setCreateExam(true);
-        adminPermission.setEditScore(false);
+        success = sql.exec(fillVersionNumber);
 
-        if(sql.prepare(fillAccount))
+        if(success)
+            success = sql.prepare(fillAccount);
+
+        if(success)
         {
+            /* 设置管理员权限到permission */
+            permission.setCreateAccount(true);
+            permission.setCreateClass(false);
+            permission.setCreateExam(true);
+            permission.setEditScore(false);
+
+            /* 序列化permission到字节流 */
             QDataStream ds(&byteArray, QIODevice::WriteOnly);
-            ds << adminPermission;
+            ds << permission;
 
             sql.bindValue(":id", "Admin");
             sql.bindValue(":password", "123456");
             sql.bindValue(":username", tr("管理员"));
             sql.bindValue(":permission", byteArray);
 
-            result = !byteArray.isEmpty() && sql.exec();
+            /* 把字节流保存到数据库 */
+            success = !byteArray.isEmpty() && sql.exec();
         }
 
-        if(result)
+        if(success)
         {
             byteArray.clear();
 
-            adminPermission.setCreateAccount(false);
-            adminPermission.setCreateClass(false);
-            adminPermission.setCreateExam(false);
-            adminPermission.setEditScore(false);
+            /* 设置游客权限到permission */
+            permission.setCreateAccount(false);
+            permission.setCreateClass(false);
+            permission.setCreateExam(false);
+            permission.setEditScore(false);
 
-            if(sql.prepare(fillAccount))
-            {
-                QDataStream ds(&byteArray, QIODevice::WriteOnly);
-                ds << adminPermission;
 
-                sql.bindValue(":id", "Guest");
-                sql.bindValue(":password", "123456");
-                sql.bindValue(":username", tr("游客"));
-                sql.bindValue(":permission", byteArray);
+            /* 序列化permission到字节流 */
+            QDataStream ds(&byteArray, QIODevice::WriteOnly);
+            ds << permission;
 
-                result = !byteArray.isEmpty() && sql.exec();
-            }
+            sql.bindValue(":id", "Guest");
+            sql.bindValue(":password", "123456");
+            sql.bindValue(":username", tr("游客"));
+            sql.bindValue(":permission", byteArray);
+
+            /* 把字节流保存到数据库 */
+            success = !byteArray.isEmpty() && sql.exec();
         }
+
+        if(success)
+            success = db.commit();
+        else
+            (void)db.rollback();
+
+        qDebug() << "InitializeDBTask::fillInitialData -> " << sql.lastError().text();
     }
 
-    qDebug() << "InitializeDBTask::fillInitialData -> " << sql.lastError().text();
-
-    return result;
+    return success;
 }
 
 void LoginTask::run(const QString &id, const QString &pwd, bool save)
@@ -261,32 +267,28 @@ bool LoginTask::login(const QString &id, const QString &pwd, bool save)
 
             if(result.isValid())
             {
-                success = updateSaveState(id, save);
+                success = updateSaveStateAndLoginTime(id, save);
 
-                QByteArray byteArray = result.toByteArray();
-                QDataStream ds(&byteArray, QIODevice::ReadOnly);
-                Permission permission;
+                if(success)
+                {
+                    QByteArray byteArray = result.toByteArray();
+                    QDataStream ds(&byteArray, QIODevice::ReadOnly);
 
-                ds >> permission;
-
-                qDebug() <<
-                        permission.canCreateAccount() <<
-                        permission.canCreateClass() <<
-                        permission.canCreateExam() <<
-                        permission.canEditScore();
-
-                //success = true;
+                    ds >> Context::instance()->curAccountPermission();
+                }
             }
         }
     }
 
+    qDebug() << "LoginTask::login -> " << sql.lastError().text();
+
     return success;
 }
 
-bool LoginTask::updateSaveState(const QString &id, bool save)
+bool LoginTask::updateSaveStateAndLoginTime(const QString &id, bool save)
 {
     static const QString updateSaveState = tr(
-            "UPDATE Accounts SET remember_pwd = :save "
+            "UPDATE Accounts SET save_password = :save, login_time = datetime(current_timestamp,'localtime') "
                 "WHERE account_id = :id"
             );
 
@@ -302,6 +304,8 @@ bool LoginTask::updateSaveState(const QString &id, bool save)
         success = sql.exec();
     }
 
+    qDebug() << "LoginTask::updateSaveStateAndLoginTime -> " << sql.lastError().text();
+
     return success;
 }
 
@@ -314,10 +318,10 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
 {
     static const QString listAccounts = tr(
             "SELECT account_id, name,"
-                "CASE WHEN remember_pwd = 0 "
+                "CASE WHEN save_password = 0 "
                     "THEN '' "
                 "ELSE account_pwd "
-                "END AS account_pwd , remember_pwd "
+                "END AS account_pwd , save_password "
             "FROM Accounts "
                 "ORDER BY login_time DESC LIMIT :max"
             );
@@ -351,6 +355,7 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
                 row.append(autoLogin);                                      //是否自动登陆
 
                 model->appendRow(row);
+
                 qDebug() << model->rowCount() << sql.value(0) << sql.value(1) << sql.value(2);
             }
 
@@ -363,12 +368,12 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
     return success;
 }
 
-void FillClassTreeWidgetTask::run(QTreeWidget *widget)
+void FillNavigationTreeTask::run(QTreeWidget *widget, const QString &rootName)
 {
-    watchFuture(QtConcurrent::run(this, &FillClassTreeWidgetTask::fillClassTreeWidget, widget));
+    watchFuture(QtConcurrent::run(this, &FillNavigationTreeTask::fillNavigationTree, widget, rootName));
 }
 
-bool FillClassTreeWidgetTask::fillClassTreeWidget(QTreeWidget *widget)
+bool FillNavigationTreeTask::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
 {
     static const QString gradeClassQuery = tr(
             "SELECT grade, class from GradeClass order by grade DESC, class ASC"
@@ -378,11 +383,12 @@ bool FillClassTreeWidgetTask::fillClassTreeWidget(QTreeWidget *widget)
 
     if(sql.exec(gradeClassQuery))
     {
-        QTreeWidgetItem *root  = new QTreeWidgetItem(); //根结点
-        QTreeWidgetItem *lastGradeItem = NULL;          //上次年级节点
-        int lastGradeNum = -1;                          //上次年级号
+        NavigationItem *root  = new NavigationItem(NavigationItem::Root);   //根结点
+        NavigationItem *lastGradeItem = NULL;                               //上次年级节点
+        int lastGradeNum = -1;                                              //上次年级号
 
-        root->setText(0, tr("根"));
+        root->setText(0, rootName);
+
         while(sql.next())
         {
             int gradeNum = sql.value(0).toInt();
@@ -390,11 +396,14 @@ bool FillClassTreeWidgetTask::fillClassTreeWidget(QTreeWidget *widget)
             if(gradeNum != lastGradeNum)
             {
                 lastGradeNum = gradeNum;
-                lastGradeItem = new QTreeWidgetItem(root);
-                lastGradeItem->setText(0, QString::number(gradeNum));
+                lastGradeItem = new NavigationItem(root, NavigationItem::Grade);
+                lastGradeItem->setText(0, QString::number(gradeNum) + tr("级"));
+                lastGradeItem->setData(0, NavigationItem::ExtraData, gradeNum);
             }
 
-            (new QTreeWidgetItem(lastGradeItem))->setText(0, sql.value(1).toString());
+            NavigationItem *classItem = new NavigationItem(lastGradeItem, NavigationItem::Class);
+            classItem->setText(0, sql.value(1).toString() + tr("班"));
+            classItem->setData(0, NavigationItem::ExtraData, sql.value(1));
         }
 
         widget->clear();
@@ -406,16 +415,20 @@ bool FillClassTreeWidgetTask::fillClassTreeWidget(QTreeWidget *widget)
     return true;
 }
 
-void InsertGradeClassTask::run(int gradeNum, int classNum, int classType)
+void InsertOrUpdateNavigationTreeTask::run(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType)
 {
-    watchFuture(QtConcurrent::run(this, &InsertGradeClassTask::insertGradeClass, gradeNum, classNum, classType));
+    watchFuture(QtConcurrent::run(this, &InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree,
+                                  widget, gradeNum, classNum, classType));
 }
 
-bool InsertGradeClassTask::insertGradeClass(int gradeNum, int classNum, int classType)
+bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget *widget,
+                                                                    int gradeNum,
+                                                                    int classNum,
+                                                                    const QString &classType)
 {
     static const QString insertGradeClass = tr(
-            "INSERT INTO GradeClass(grade, class, class_type_id) "
-                "VALUES (:grade, :class, :class_type_id)"
+            "INSERT OR REPLACE INTO GradeClass(grade, class, type) "
+                "VALUES (:grade, :class, :type)"
             );
 
     bool success = false;
@@ -426,10 +439,62 @@ bool InsertGradeClassTask::insertGradeClass(int gradeNum, int classNum, int clas
     {
         sql.bindValue(":grade", gradeNum);
         sql.bindValue(":class", classNum);
-        sql.bindValue(":class_type_id", classType);
+        sql.bindValue(":type", classType);
 
         success = sql.exec();
+
+        QTreeWidgetItem *root = widget->topLevelItem(0);
+
+        Q_ASSERT_X(root,                                                     //断言
+                   "InsertOrUpdateClassTreeTask::insertOrUpdateClassTree",   //位置
+                   "Tree has not been initialized!");                        //原因
+        if(root)
+        {
+            QTreeWidgetItem *gradeItem = NULL;
+
+            for(int i = 0; i < root->childCount(); ++i)
+            {
+                QTreeWidgetItem *curGradeItem = root->child(i);
+
+                if(curGradeItem && curGradeItem->type() == NavigationItem::Grade)
+                    if(curGradeItem->data(0, NavigationItem::ExtraData).toInt() == gradeNum)
+                    {
+                    gradeItem = curGradeItem;
+                    break;
+                }
+            }
+
+            if(!gradeItem)
+            {
+                gradeItem = new NavigationItem(root, NavigationItem::Grade);
+                gradeItem->setText(0, QString::number(gradeNum) + tr("级"));
+                gradeItem->setData(0, NavigationItem::ExtraData, gradeNum);
+            }
+
+            QTreeWidgetItem *classItem = NULL;
+
+            for(int i = 0; i < gradeItem->childCount(); ++i)
+            {
+                QTreeWidgetItem *curClassItem = root->child(i);
+
+                if(curClassItem && curClassItem->type() == NavigationItem::Class)
+                    if(curClassItem->data(0, NavigationItem::ExtraData).toInt() == classNum)
+                    {
+                    classItem = curClassItem;
+                    break;
+                }
+            }
+
+            if(!classItem)
+            {
+                classItem = new NavigationItem(gradeItem, NavigationItem::Class);
+                classItem->setText(0, QString::number(classNum) + tr("班"));
+                classItem->setData(0, NavigationItem::ExtraData, classNum);
+            }
+        }
     }
+
+    qDebug() << "fuck:" << sql.lastError().text();
 
     return success;
 }

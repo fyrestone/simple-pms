@@ -14,7 +14,9 @@ SOURCES += main.cpp \
     ../../src/gui/mainwin.cpp \
     ../../src/gui/aboutdlg.cpp \
     ../../src/engine/dataengine.cpp \
-    ../../src/engine/abstracttask.cpp
+    ../../src/engine/abstracttask.cpp \
+    ../../src/context/context.cpp \
+    ../../src/gui/custom/navigationitem.cpp
 
 HEADERS  += \
     ../../src/gui/mainwin.h \
@@ -22,7 +24,10 @@ HEADERS  += \
     ../../src/pch.h \
     ../../src/gui/mainwin_p.h \
     ../../src/engine/dataengine.h \
-    ../../src/engine/abstracttask.h
+    ../../src/engine/abstracttask.h \
+    ../../src/context/permission.h \
+    ../../src/context/context.h \
+    ../../src/gui/custom/navigationitem.h
 
 FORMS    += \
     ../../src/gui/mainwin.ui \

@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     gui/aboutdlg.cpp \
     engine/dataengine.cpp \
     engine/abstracttask.cpp \
-    context/context.cpp
+    context/context.cpp \
+    gui/custom/navigationitem.cpp
 
 HEADERS  += pch.h \
     gui/logindlg.h \
@@ -43,7 +44,8 @@ HEADERS  += pch.h \
     context/context.h \
     gui/tabpage_p.h \
     gui/mainwin_p.h \
-    gui/logindlg_p.h
+    gui/logindlg_p.h \
+    gui/custom/navigationitem.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \

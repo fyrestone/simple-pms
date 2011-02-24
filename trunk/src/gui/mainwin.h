@@ -17,12 +17,19 @@ public:
     explicit MainWin(QWidget *parent = 0);
     ~MainWin();
 
+public slots:
+    void initializeAndShow();
+
 protected:
     void changeEvent(QEvent *e);
 
 private:
+    void initializeAll();
     void setCustomApperance();
     void connectSignalsAndSlots();
+
+private slots:
+    void testSlot();
 
 private:
     Q_DISABLE_COPY(MainWin)

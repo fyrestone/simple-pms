@@ -22,10 +22,15 @@ LIBS += -L$$PLUGIN_DIR -lqcncodecs -lqsqlite
 SOURCES += main.cpp\
         widget.cpp \
     ../../src/engine/dataengine.cpp \
-    ../../src/engine/abstracttask.cpp
+    ../../src/engine/abstracttask.cpp \
+    ../../src/context/context.cpp \
+    ../../src/gui/custom/navigationitem.cpp
 
 HEADERS  += widget.h \
     ../../src/engine/dataengine.h \
-    ../../src/engine/abstracttask.h
+    ../../src/engine/abstracttask.h \
+    ../../src/context/permission.h \
+    ../../src/context/context.h \
+    ../../src/gui/custom/navigationitem.h
 
 FORMS    += widget.ui
