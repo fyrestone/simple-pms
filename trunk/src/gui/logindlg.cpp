@@ -8,8 +8,8 @@ LoginDlgPrivate::LoginDlgPrivate()
     : task(DataEngine::Task::instance()),
     completerPopup(new QTreeView)
 {
-    connect(task, SIGNAL(finished(DataEngine::Tasks,QVariant)),
-            this, SLOT(finished(DataEngine::Tasks,QVariant)));
+    connect(task, SIGNAL(finished(int,QVariant)),
+            this, SLOT(finished(int,QVariant)));
 
     task->initializeDB("data.db"); //初始化数据库
 }
@@ -44,9 +44,9 @@ void LoginDlgPrivate::setAutoLoginToModel(int index, bool state)
     (void)model.setData(model.index(index, 4), state);
 }
 
-void LoginDlgPrivate::finished(DataEngine::Tasks name, const QVariant &result)
+void LoginDlgPrivate::finished(int taskID, const QVariant &result)
 {
-    switch(name)
+    switch(taskID)
     {
     case DataEngine::InitializeDB:
         if(result.type() == QVariant::Bool && result.toBool())
@@ -73,7 +73,7 @@ void LoginDlgPrivate::finished(DataEngine::Tasks name, const QVariant &result)
         break;
     }
 
-    qDebug() << "finished with:" << name << result;
+    qDebug() << "finished with:" << taskID << result;
 }
 
 void LoginDlgPrivate::initializeComboBoxView()

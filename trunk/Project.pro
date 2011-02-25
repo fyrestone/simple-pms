@@ -1,5 +1,5 @@
 TEMPLATE = subdirs
 
-SUBDIRS = src test/MainWinTest test/TabPageTest tools/TransDB
+SUBDIRS = src
 
 src.file = src/PMS.pro

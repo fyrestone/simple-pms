@@ -23,7 +23,7 @@ signals:
     void expandClassTree();
 
 private slots:
-    void finished(DataEngine::Tasks name, const QVariant &result);
+    void finished(int taskID, const QVariant &result);
 
 private:
     Q_DISABLE_COPY(MainWinPrivate)

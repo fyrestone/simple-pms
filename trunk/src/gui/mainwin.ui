@@ -98,7 +98,7 @@
     </font>
    </property>
   </widget>
-  <widget class="QDockWidget" name="classDockWidget">
+  <widget class="QDockWidget" name="navigationDockWidget">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
      <horstretch>0</horstretch>
@@ -123,7 +123,7 @@
       <number>0</number>
      </property>
      <item row="0" column="0">
-      <widget class="QTreeWidget" name="classTreeWidget">
+      <widget class="QTreeWidget" name="navigationTree">
        <property name="font">
         <font>
          <family>宋体</family>
@@ -182,7 +182,7 @@
       <number>0</number>
      </property>
      <item row="0" column="0">
-      <widget class="QTreeView" name="statisticsTreeView">
+      <widget class="QTreeView" name="statisticsTree">
        <property name="font">
         <font>
          <family>宋体</family>
@@ -326,8 +326,6 @@
   </action>
  </widget>
  <resources>
-  <include location="../../Resource.qrc"/>
-  <include location="../../Resource.qrc"/>
   <include location="../../Resource.qrc"/>
  </resources>
  <connections/>

@@ -8,9 +8,6 @@
 
 using namespace DataEngine;
 
-/* 元类型声明 */
-int i = qRegisterMetaType<Tasks>("DataEngine::Tasks");
-
 void InitializeDBTask::run(const QString &dbPath)
 {
     watchFuture(QtConcurrent::run(this, &InitializeDBTask::initializeDB, dbPath));
