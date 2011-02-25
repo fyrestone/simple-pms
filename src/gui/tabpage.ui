@@ -221,7 +221,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../Resource.qrc"/>
+  <include location="../../Resource.qrc"/>
  </resources>
  <connections/>
 </ui>
