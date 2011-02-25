@@ -7,47 +7,17 @@ Q_GLOBAL_STATIC(Task, task)
 
 Task::Task()
 {
-    connect(&initializeDBTask, SIGNAL(finished(DataEngine::Tasks,QVariant)),
-            this, SIGNAL(finished(DataEngine::Tasks,QVariant)));
-    connect(&loginTask, SIGNAL(finished(DataEngine::Tasks,QVariant)),
-            this, SIGNAL(finished(DataEngine::Tasks,QVariant)));
-    connect(&fillAccountsListModelTask, SIGNAL(finished(DataEngine::Tasks,QVariant)),
-            this, SIGNAL(finished(DataEngine::Tasks,QVariant)));
-    connect(&fillNavigationTreeTask, SIGNAL(finished(DataEngine::Tasks,QVariant)),
-            this, SIGNAL(finished(DataEngine::Tasks,QVariant)));
+    connect(&initializeDBTask, SIGNAL(finished(int,QVariant)),
+            this, SIGNAL(finished(int,QVariant)));
+    connect(&loginTask, SIGNAL(finished(int,QVariant)),
+            this, SIGNAL(finished(int,QVariant)));
+    connect(&fillAccountsListModelTask, SIGNAL(finished(int,QVariant)),
+            this, SIGNAL(finished(int,QVariant)));
+    connect(&fillNavigationTreeTask, SIGNAL(finished(int,QVariant)),
+            this, SIGNAL(finished(int,QVariant)));
 }
 
 Task *Task::instance()
 {
     return task();
 }
-
-void Task::initializeDB(const QString &dbPath)
-{
-    initializeDBTask.run(dbPath);
-}
-
-void Task::login(const QString &id, const QString &pwd, bool save)
-{
-    loginTask.run(id, pwd, save);
-}
-
-void Task::fillAccountsListModel(QStandardItemModel *model, int max)
-{
-    fillAccountsListModelTask.run(model, max);
-}
-
-void Task::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
-{
-    fillNavigationTreeTask.run(widget, rootName);
-}
-
-void Task::insertOrUpdateNavigationTree(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType)
-{
-    insertOrUpdateNavigationTreeTask.run(widget, gradeNum, classNum, classType);
-}
-
-//void Task::insertGradeClass(int gradeNum, int classNum, int classType)
-//{
-//    insertGradeClassTask.run(gradeNum, classNum, classType);
-//}

@@ -16,8 +16,8 @@ namespace DataEngine
         InitializeDB,                       ///< 创建数据库连接->创建表->填充初始化数据
         Login,                              ///< 登陆
         FillAccountsListModel,              ///< 填充账号列表模型
-        FillClassTreeWidget,                ///< 填充班级树模型
-        InsertOrUpdateClassTreeWidget       ///< 插入年级、班级
+        FillNavigationTree,                 ///< 填充班级树模型
+        InsertOrUpdateNavigationTree        ///< 插入年级、班级
     };
 
     class AbstractBaseTask : public QObject
@@ -29,7 +29,8 @@ namespace DataEngine
         ~AbstractBaseTask() {}
 
     signals:
-        void finished(DataEngine::Tasks name, const QVariant &result);
+        /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
+        void finished(int task, const QVariant &result);
 
     private slots:
         virtual void finishDispatcher() = 0;
@@ -113,7 +114,7 @@ namespace DataEngine
         bool fillAccountsListModel(QStandardItemModel *model, int max);
     };
 
-    class FillNavigationTreeTask : public AbstractTask<FillClassTreeWidget, bool>
+    class FillNavigationTreeTask : public AbstractTask<FillNavigationTree, bool>
     {
     public:
         void run(QTreeWidget *widget, const QString &rootName);
@@ -122,7 +123,7 @@ namespace DataEngine
         bool fillNavigationTree(QTreeWidget *widget, const QString &rootName);
     };
 
-    class InsertOrUpdateNavigationTreeTask : public AbstractTask<InsertOrUpdateClassTreeWidget, bool>
+    class InsertOrUpdateNavigationTreeTask : public AbstractTask<InsertOrUpdateNavigationTree, bool>
     {
     public:
         void run(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType);

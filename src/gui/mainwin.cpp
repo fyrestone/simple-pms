@@ -16,15 +16,15 @@ MainWinPrivate::MainWinPrivate()
     delTabButton.setIcon(delTabIcon);
     delTabButton.setFlat(true);
 
-    connect(task, SIGNAL(finished(DataEngine::Tasks,QVariant)),
-            this, SLOT(finished(DataEngine::Tasks,QVariant)));
+    connect(task, SIGNAL(finished(int,QVariant)),
+            this, SLOT(finished(int,QVariant)));
 }
 
-void MainWinPrivate::finished(DataEngine::Tasks name, const QVariant &result)
+void MainWinPrivate::finished(int taskID, const QVariant &result)
 {
-    switch(name)
+    switch(taskID)
     {
-    case DataEngine::FillClassTreeWidget:
+    case DataEngine::FillNavigationTree:
         if(result.type() == QVariant::Bool && result.toBool())
             emit expandClassTree();
     }
@@ -67,12 +67,12 @@ void MainWin::changeEvent(QEvent *e)
 
 void MainWin::testSlot()
 {
-    d->task->insertOrUpdateNavigationTree(ui->classTreeWidget, 2006, 2, "fuck");
+    d->task->insertOrUpdateNavigationTree(ui->navigationTree, 2006, 2, "fuck");
 }
 
 void MainWin::initializeAll()
 {
-    d->task->fillNavigationTree(ui->classTreeWidget, tr("驻马店第一初级中学"));
+    d->task->fillNavigationTree(ui->navigationTree, tr("驻马店第一初级中学"));
 }
 
 void MainWin::setCustomApperance()
