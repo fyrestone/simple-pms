@@ -7,10 +7,10 @@
 QT       += core gui sql
 
 #project directory
-PROJECT_DIR = E:\Project\PMS
+PROJECT_DIR = E:/Project/PMS
 
 #plugin lib directory
-PLUGIN_DIR = $$PROJECT_DIR\plugin
+PLUGIN_DIR = $$PROJECT_DIR/plugin
 
 TARGET = PMS
 TEMPLATE = app
@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     engine/dataengine.cpp \
     engine/abstracttask.cpp \
     context/context.cpp \
-    gui/custom/navigationitem.cpp
+    gui/custom/navigationitem.cpp \
+    gui/classmgmtdlg.cpp
 
 HEADERS  += pch.h \
     gui/logindlg.h \
@@ -45,12 +46,14 @@ HEADERS  += pch.h \
     gui/tabpage_p.h \
     gui/mainwin_p.h \
     gui/logindlg_p.h \
-    gui/custom/navigationitem.h
+    gui/custom/navigationitem.h \
+    gui/classmgmtdlg.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \
     gui/tabpage.ui \
-    gui/aboutdlg.ui
+    gui/aboutdlg.ui \
+    gui/classmgmtdlg.ui
 
 RC_FILE = ../info/info.rc
 
