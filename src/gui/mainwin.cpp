@@ -85,5 +85,6 @@ void MainWin::setCustomApperance()
 void MainWin::connectSignalsAndSlots()
 {
     connect(ui->aboutAct, SIGNAL(triggered()), &d->aboutDlg, SLOT(exec()));
+    connect(ui->classMgmtAct, SIGNAL(triggered()), &d->classMgmtDlg, SLOT(exec()));
     connect(d, SIGNAL(expandClassTree()), this, SLOT(testSlot()));
 }

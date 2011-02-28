@@ -412,7 +412,10 @@ bool FillNavigationTreeTask::fillNavigationTree(QTreeWidget *widget, const QStri
     return true;
 }
 
-void InsertOrUpdateNavigationTreeTask::run(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType)
+void InsertOrUpdateNavigationTreeTask::run(QTreeWidget *widget,
+                                           int gradeNum,
+                                           int classNum,
+                                           const QString &classType)
 {
     watchFuture(QtConcurrent::run(this, &InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree,
                                   widget, gradeNum, classNum, classType));
@@ -453,9 +456,9 @@ bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget 
             {
                 QTreeWidgetItem *curGradeItem = root->child(i);
 
-                if(curGradeItem && curGradeItem->type() == NavigationItem::Grade)
-                    if(curGradeItem->data(0, NavigationItem::ExtraData).toInt() == gradeNum)
-                    {
+                if(curGradeItem && curGradeItem->type() == NavigationItem::Grade &&
+                   curGradeItem->data(0, NavigationItem::ExtraData).toInt() == gradeNum)
+                {
                     gradeItem = curGradeItem;
                     break;
                 }
@@ -472,11 +475,11 @@ bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget 
 
             for(int i = 0; i < gradeItem->childCount(); ++i)
             {
-                QTreeWidgetItem *curClassItem = root->child(i);
+                QTreeWidgetItem *curClassItem = gradeItem->child(i);
 
-                if(curClassItem && curClassItem->type() == NavigationItem::Class)
-                    if(curClassItem->data(0, NavigationItem::ExtraData).toInt() == classNum)
-                    {
+                if(curClassItem && curClassItem->type() == NavigationItem::Class &&
+                   curClassItem->data(0, NavigationItem::ExtraData).toInt() == classNum)
+                {
                     classItem = curClassItem;
                     break;
                 }

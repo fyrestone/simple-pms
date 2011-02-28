@@ -47,7 +47,8 @@ HEADERS  += pch.h \
     gui/mainwin_p.h \
     gui/logindlg_p.h \
     gui/custom/navigationitem.h \
-    gui/classmgmtdlg.h
+    gui/classmgmtdlg.h \
+    gui/classmgmtdlg_p.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \

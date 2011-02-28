@@ -49,6 +49,7 @@
     <property name="title">
      <string>设置(&amp;S)</string>
     </property>
+    <addaction name="classMgmtAct"/>
     <addaction name="configAct"/>
    </widget>
    <widget class="QMenu" name="dataMenu">
@@ -322,6 +323,11 @@
    </property>
    <property name="text">
     <string>首选项</string>
+   </property>
+  </action>
+  <action name="classMgmtAct">
+   <property name="text">
+    <string>班级管理</string>
    </property>
   </action>
  </widget>

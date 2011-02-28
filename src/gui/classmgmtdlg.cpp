@@ -1,9 +1,23 @@
 #include "classmgmtdlg.h"
+#include "classmgmtdlg_p.h"
 #include "ui_classmgmtdlg.h"
+
+ClassMgmtDlgPrivate::ClassMgmtDlgPrivate(ClassMgmtDlg *parent)
+    :task(DataEngine::Task::instance()),
+    q(parent)
+{
+
+}
+
+void ClassMgmtDlgPrivate::finished(int taskID, const QVariant &result)
+{
+
+}
 
 ClassMgmtDlg::ClassMgmtDlg(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::ClassMgmtDlg)
+    ui(new Ui::ClassMgmtDlg),
+    d(new ClassMgmtDlgPrivate(this))
 {
     ui->setupUi(this);
 }
