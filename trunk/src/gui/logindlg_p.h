@@ -15,16 +15,9 @@ class LoginDlgPrivate : public QObject
 public:
     LoginDlgPrivate(LoginDlg *parent);
 
-public slots:
-    void update(int index);
-    void updateSavePassword(bool state);
-    void updateAutoLogin(bool state);
-    void login();
-
-public:
-    QTreeView *completerPopup;
-    QTreeView comboBoxView;
-    QStandardItemModel model;
+    void initializePublicMember();
+    void connectSignalsAndSlots();
+    void completeConstruct();
 
 private:
     void initializeComboBoxView();
@@ -44,11 +37,18 @@ private:
 
 private slots:
     void finished(int taskID, const QVariant &result);
+    void update(int index);
+    void updateSavePassword(bool state);
+    void updateAutoLogin(bool state);
+    void login();
 
 private:
     Q_DISABLE_COPY(LoginDlgPrivate)
-    DataEngine::Task *task;
+    DataEngine::Task * const task;
     LoginDlg * const q;
+    QTreeView *completerPopup;
+    QTreeView comboBoxView;
+    QStandardItemModel model;
 };
 
 #endif // LOGINDLG_P_H
