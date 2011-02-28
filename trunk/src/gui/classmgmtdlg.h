@@ -7,9 +7,13 @@ namespace Ui {
     class ClassMgmtDlg;
 }
 
+class ClassMgmtDlgPrivate;
+
 class ClassMgmtDlg : public QDialog
 {
     Q_OBJECT
+
+    friend class ClassMgmtDlgPrivate;
 
 public:
     explicit ClassMgmtDlg(QWidget *parent = 0);
@@ -19,7 +23,9 @@ protected:
     void changeEvent(QEvent *e);
 
 private:
-    Ui::ClassMgmtDlg *ui;
+    Q_DISABLE_COPY(ClassMgmtDlg)
+    Ui::ClassMgmtDlg * const ui;
+    ClassMgmtDlgPrivate * const d;
 };
 
 #endif // CLASSMGMTDLG_H

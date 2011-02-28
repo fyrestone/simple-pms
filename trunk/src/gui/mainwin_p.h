@@ -4,6 +4,7 @@
 #include <QtCore/QObject>           /* 使用QObject */
 #include <QPushButton>              /* addTabButton/delTabButton */
 #include "aboutdlg.h"               /* 使用AboutDlg */
+#include "classmgmtdlg.h"           /* 使用ClassMgmtDlg */
 #include "../engine/dataengine.h"   /* 使用Task */
 
 class MainWinPrivate : public QObject
@@ -16,6 +17,7 @@ public:
 public:
     DataEngine::Task *task;
     AboutDlg aboutDlg;
+    ClassMgmtDlg classMgmtDlg;
     QPushButton addTabButton;
     QPushButton delTabButton;
 

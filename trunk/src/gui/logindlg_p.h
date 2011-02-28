@@ -6,12 +6,29 @@
 #include <QStandardItemModel>           /* 使用QStandardItemModel */
 #include "../engine/dataengine.h"       /* 使用Task */
 
+class LoginDlg;
+
 class LoginDlgPrivate : public QObject
 {
     Q_OBJECT
 
 public:
-    LoginDlgPrivate();
+    LoginDlgPrivate(LoginDlg *parent);
+
+public slots:
+    void update(int index);
+    void updateSavePassword(bool state);
+    void updateAutoLogin(bool state);
+    void login();
+
+public:
+    QTreeView *completerPopup;
+    QTreeView comboBoxView;
+    QStandardItemModel model;
+
+private:
+    void initializeComboBoxView();
+    void initializeCompleterPopup();
 
     QString passwordFromModel(int index) const;
     void setPasswordToModel(int index, const QString &pwd);
@@ -22,24 +39,16 @@ public:
     bool autoLoginFromModel(int index) const;
     void setAutoLoginToModel(int index, bool state);
 
-public:
-    DataEngine::Task *task;
-    QTreeView *completerPopup;
-    QTreeView comboBoxView;
-    QStandardItemModel model;
-
-signals:
-    void ready();
-    void logined(bool success);
+    void save() const;
+    void load();
 
 private slots:
     void finished(int taskID, const QVariant &result);
 
 private:
     Q_DISABLE_COPY(LoginDlgPrivate)
-
-    void initializeComboBoxView();
-    void initializeCompleterPopup();
+    DataEngine::Task *task;
+    LoginDlg * const q;
 };
 
 #endif // LOGINDLG_P_H
