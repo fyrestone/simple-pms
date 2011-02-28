@@ -20,10 +20,6 @@ public:
     ~LoginDlg();
 
 private:
-    void initializeMember();
-    void connectSignalsAndSlots();
-
-private:
     Q_DISABLE_COPY(LoginDlg)
     Ui::LoginDlg * const ui;
     LoginDlgPrivate * const d;

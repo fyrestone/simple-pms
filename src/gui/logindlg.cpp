@@ -5,59 +5,40 @@
 #include <QMessageBox>
 
 LoginDlgPrivate::LoginDlgPrivate(LoginDlg *parent) :
-    completerPopup(new QTreeView),
     task(DataEngine::Task::instance()),
-    q(parent)
+    q(parent),
+    completerPopup(new QTreeView)
 {
-    connect(task, SIGNAL(finished(int,QVariant)),
-            this, SLOT(finished(int,QVariant)));
+}
 
+inline void LoginDlgPrivate::initializePublicMember()
+{
+    q->ui->idComboBox->setModel(&model);
+    q->ui->idComboBox->setView(&comboBoxView);
+    q->ui->idComboBox->completer()->setCompletionMode(QCompleter::PopupCompletion);
+    q->ui->idComboBox->completer()->setPopup(completerPopup);
+}
+
+inline void LoginDlgPrivate::connectSignalsAndSlots()
+{
+    connect(task,                   SIGNAL(finished(int,QVariant)),
+            this,                   SLOT(finished(int,QVariant)));
+    connect(q->ui->idComboBox,      SIGNAL(currentIndexChanged(int)),
+            this,                   SLOT(update(int)));
+    connect(q->ui->savePassword,    SIGNAL(clicked(bool)),
+            this,                   SLOT(updateSavePassword(bool)));
+    connect(q->ui->autoLogin,       SIGNAL(clicked(bool)),
+            this,                   SLOT(updateAutoLogin(bool)));
+    connect(q->ui->loginButton,     SIGNAL(clicked()),
+            this,                   SLOT(login()));
+}
+
+inline void LoginDlgPrivate::completeConstruct()
+{
     task->initializeDB("data.db"); //初始化数据库
 }
 
-void LoginDlgPrivate::update(int index)
-{
-    q->ui->passwordLineEdit->setText(passwordFromModel(index));
-    q->ui->savePassword->setChecked(savePasswordFromModel(index));
-    q->ui->autoLogin->setChecked(autoLoginFromModel(index));
-}
-
-void LoginDlgPrivate::updateAutoLogin(bool state)
-{
-    /* 更新state到对应autoLogin的model */
-    setAutoLoginToModel(q->ui->idComboBox->currentIndex(), state);
-
-    /* 自动登录为true则要设置保存密码为true */
-    if(state)
-    {
-        q->ui->savePassword->setChecked(true);
-        setSavePasswordToModel(q->ui->idComboBox->currentIndex(), true);
-    }
-}
-
-void LoginDlgPrivate::updateSavePassword(bool state)
-{
-    /* 更新state到对应savePassword的model */
-    setSavePasswordToModel(q->ui->idComboBox->currentIndex(), state);
-
-    /* 保存密码为false则要设置自动登录为false */
-    if(!state)
-    {
-        q->ui->autoLogin->setChecked(false);
-        setAutoLoginToModel(q->ui->idComboBox->currentIndex(), false);
-    }
-}
-
-void LoginDlgPrivate::login()
-{
-    QString id = q->ui->idComboBox->currentText();         //账号
-    QString pwd = q->ui->passwordLineEdit->text();         //密码
-    bool savePassword = q->ui->savePassword->isChecked();  //是否保存密码
-
-    task->login(id, pwd, savePassword);
-}
-
-void LoginDlgPrivate::initializeComboBoxView()
+inline void LoginDlgPrivate::initializeComboBoxView()
 {
     comboBoxView.reset();
     comboBoxView.setRootIsDecorated(false);                                   //隐藏根
@@ -71,7 +52,7 @@ void LoginDlgPrivate::initializeComboBoxView()
     comboBoxView.header()->setResizeMode(1, QHeaderView::ResizeToContents);   //姓名列收缩
 }
 
-void LoginDlgPrivate::initializeCompleterPopup()
+inline void LoginDlgPrivate::initializeCompleterPopup()
 {
     completerPopup->reset();
     completerPopup->setRootIsDecorated(false);                                //隐藏根
@@ -85,37 +66,37 @@ void LoginDlgPrivate::initializeCompleterPopup()
     completerPopup->header()->setResizeMode(1, QHeaderView::ResizeToContents);//姓名列收缩
 }
 
-QString LoginDlgPrivate::passwordFromModel(int index) const
+inline QString LoginDlgPrivate::passwordFromModel(int index) const
 {
     return model.data(model.index(index, 2)).toString();
 }
 
-void LoginDlgPrivate::setPasswordToModel(int index, const QString &pwd)
+inline void LoginDlgPrivate::setPasswordToModel(int index, const QString &pwd)
 {
     (void)model.setData(model.index(index, 2), pwd);
 }
 
-bool LoginDlgPrivate::savePasswordFromModel(int index) const
+inline bool LoginDlgPrivate::savePasswordFromModel(int index) const
 {
     return model.data(model.index(index, 3)).toBool();
 }
 
-void LoginDlgPrivate::setSavePasswordToModel(int index, bool state)
+inline void LoginDlgPrivate::setSavePasswordToModel(int index, bool state)
 {
      (void)model.setData(model.index(index, 3), state);
 }
 
-bool LoginDlgPrivate::autoLoginFromModel(int index) const
+inline bool LoginDlgPrivate::autoLoginFromModel(int index) const
 {
     return model.data(model.index(index, 4)).toBool();
 }
 
-void LoginDlgPrivate::setAutoLoginToModel(int index, bool state)
+inline void LoginDlgPrivate::setAutoLoginToModel(int index, bool state)
 {
     (void)model.setData(model.index(index, 4), state);
 }
 
-void LoginDlgPrivate::save() const
+inline void LoginDlgPrivate::save() const
 {
     QSettings &settings = Context::instance()->curAppSettings();
 
@@ -125,7 +106,7 @@ void LoginDlgPrivate::save() const
     settings.endGroup();
 }
 
-void LoginDlgPrivate::load()
+inline void LoginDlgPrivate::load()
 {
     QSettings &settings = Context::instance()->curAppSettings();
 
@@ -192,38 +173,61 @@ void LoginDlgPrivate::finished(int taskID, const QVariant &result)
     qDebug() << "finished with:" << taskID << result;
 }
 
+void LoginDlgPrivate::update(int index)
+{
+    q->ui->passwordLineEdit->setText(passwordFromModel(index));
+    q->ui->savePassword->setChecked(savePasswordFromModel(index));
+    q->ui->autoLogin->setChecked(autoLoginFromModel(index));
+}
+
+void LoginDlgPrivate::updateAutoLogin(bool state)
+{
+    /* 更新state到对应autoLogin的model */
+    setAutoLoginToModel(q->ui->idComboBox->currentIndex(), state);
+
+    /* 自动登录为true则要设置保存密码为true */
+    if(state)
+    {
+        q->ui->savePassword->setChecked(true);
+        setSavePasswordToModel(q->ui->idComboBox->currentIndex(), true);
+    }
+}
+
+void LoginDlgPrivate::updateSavePassword(bool state)
+{
+    /* 更新state到对应savePassword的model */
+    setSavePasswordToModel(q->ui->idComboBox->currentIndex(), state);
+
+    /* 保存密码为false则要设置自动登录为false */
+    if(!state)
+    {
+        q->ui->autoLogin->setChecked(false);
+        setAutoLoginToModel(q->ui->idComboBox->currentIndex(), false);
+    }
+}
+
+void LoginDlgPrivate::login()
+{
+    QString id = q->ui->idComboBox->currentText();         //账号
+    QString pwd = q->ui->passwordLineEdit->text();         //密码
+    bool savePassword = q->ui->savePassword->isChecked();  //是否保存密码
+
+    task->login(id, pwd, savePassword);
+}
+
 LoginDlg::LoginDlg(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::LoginDlg),
     d(new LoginDlgPrivate(this))
 {
     ui->setupUi(this);
-    initializeMember();
-    connectSignalsAndSlots();
+    d->connectSignalsAndSlots();
+    d->initializePublicMember();
+    d->completeConstruct();
 }
 
 LoginDlg::~LoginDlg()
 {
     delete ui;
     delete d;
-}
-
-void LoginDlg::initializeMember()
-{
-    ui->idComboBox->setModel(&d->model);
-    ui->idComboBox->setView(&d->comboBoxView);
-    ui->idComboBox->completer()->setCompletionMode(QCompleter::PopupCompletion);
-    ui->idComboBox->completer()->setPopup(d->completerPopup);
-}
-
-void LoginDlg::connectSignalsAndSlots()
-{
-    connect(ui->idComboBox,     SIGNAL(currentIndexChanged(int)),
-            d,                  SLOT(update(int)));
-    connect(ui->savePassword,   SIGNAL(clicked(bool)),
-            d,                  SLOT(updateSavePassword(bool)));
-    connect(ui->autoLogin,      SIGNAL(clicked(bool)),
-            d,                  SLOT(updateAutoLogin(bool)));
-    connect(ui->loginButton,    SIGNAL(clicked()),
-            d,                  SLOT(login()));
 }
