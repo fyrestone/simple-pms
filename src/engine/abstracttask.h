@@ -8,6 +8,7 @@
 
 class QStandardItemModel;
 class QTreeWidget;
+class QListWidget;
 
 namespace DataEngine
 {
@@ -17,7 +18,8 @@ namespace DataEngine
         Login,                              ///< 登陆
         FillAccountsListModel,              ///< 填充账号列表模型
         FillNavigationTree,                 ///< 填充班级树模型
-        InsertOrUpdateNavigationTree        ///< 插入年级、班级
+        InsertOrUpdateNavigationTree,       ///< 插入年级、班级
+        FillClassMgmtListModel              ///< 填充班级管理的列表
     };
 
     class AbstractBaseTask : public QObject
@@ -130,6 +132,15 @@ namespace DataEngine
 
     private:
         bool insertOrUpdateNavigationTree(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType);
+    };
+
+    class FillClassMgmtListModelTask : public AbstractTask<FillClassMgmtListModel, bool>
+    {
+    public:
+        void run(QStandardItemModel *model);
+
+    private:
+        bool fillClassMgmtListModel(QStandardItemModel *model);
     };
 }
 

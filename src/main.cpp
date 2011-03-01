@@ -17,13 +17,13 @@ int main(int argc, char *argv[])
         a.installTranslator(&translator);
 
     /* 设置应用程序风格 */
-    //QApplication::setStyle(new QPlastiqueStyle);//设置为PlastiqueStyle
+    QApplication::setStyle(new QPlastiqueStyle);//设置为PlastiqueStyle
     //QApplication::setStyle(new QCleanlooksStyle);//设置为PlastiqueStyle
 
     LoginDlg w; //先构造登陆对话框
     MainWin m;  //再构造登陆对话框
 
-    QObject::connect(&w, SIGNAL(accepted()), &m, SLOT(initializeAndShow()));
+    QObject::connect(&w, SIGNAL(accepted()), &m, SLOT(show()));
 
     w.show();
 

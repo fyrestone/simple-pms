@@ -31,8 +31,7 @@ SOURCES += main.cpp\
     engine/dataengine.cpp \
     engine/abstracttask.cpp \
     context/context.cpp \
-    gui/custom/navigationitem.cpp \
-    gui/classmgmtdlg.cpp
+    gui/custom/navigationitem.cpp
 
 HEADERS  += pch.h \
     gui/logindlg.h \
@@ -46,15 +45,12 @@ HEADERS  += pch.h \
     gui/tabpage_p.h \
     gui/mainwin_p.h \
     gui/logindlg_p.h \
-    gui/custom/navigationitem.h \
-    gui/classmgmtdlg.h \
-    gui/classmgmtdlg_p.h
+    gui/custom/navigationitem.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \
     gui/tabpage.ui \
-    gui/aboutdlg.ui \
-    gui/classmgmtdlg.ui
+    gui/aboutdlg.ui
 
 RC_FILE = ../info/info.rc
 
