@@ -15,7 +15,7 @@ class LoginDlgPrivate : public QObject
 public:
     LoginDlgPrivate(LoginDlg *parent);
 
-    void initializePublicMember();
+    void initializeMember();
     void connectSignalsAndSlots();
     void completeConstruct();
 

@@ -498,3 +498,24 @@ bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget 
 
     return success;
 }
+
+void FillClassMgmtListModelTask::run(QStandardItemModel *model)
+{
+    watchFuture(QtConcurrent::run(this, &FillClassMgmtListModelTask::fillClassMgmtListModel, model));
+}
+
+bool FillClassMgmtListModelTask::fillClassMgmtListModel(QStandardItemModel *model)
+{
+    static const QString gradeClassQuery = tr(
+            "SELECT grade, class, type from GradeClass order by grade DESC, class ASC"
+            );
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.exec(gradeClassQuery))
+    {
+        model->clear();
+    }
+
+    return true;
+}

@@ -11,7 +11,7 @@ LoginDlgPrivate::LoginDlgPrivate(LoginDlg *parent) :
 {
 }
 
-inline void LoginDlgPrivate::initializePublicMember()
+inline void LoginDlgPrivate::initializeMember()
 {
     q->ui->idComboBox->setModel(&model);
     q->ui->idComboBox->setView(&comboBoxView);
@@ -222,7 +222,7 @@ LoginDlg::LoginDlg(QWidget *parent) :
 {
     ui->setupUi(this);
     d->connectSignalsAndSlots();
-    d->initializePublicMember();
+    d->initializeMember();
     d->completeConstruct();
 }
 
