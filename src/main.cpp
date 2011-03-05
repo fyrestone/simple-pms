@@ -27,5 +27,7 @@ int main(int argc, char *argv[])
 
     w.show();
 
+    qDebug() << QThread::currentThreadId() << "MainThread";
+
     return a.exec();
 }

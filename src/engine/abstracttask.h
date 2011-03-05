@@ -5,10 +5,10 @@
 #include <QVariant>
 #include <QtConcurrentRun>
 #include <QFutureWatcher>
+#include <QFutureSynchronizer>
 
 class QStandardItemModel;
 class QTreeWidget;
-class QListWidget;
 
 namespace DataEngine
 {
@@ -19,7 +19,7 @@ namespace DataEngine
         FillAccountsListModel,              ///< 填充账号列表模型
         FillNavigationTree,                 ///< 填充班级树模型
         InsertOrUpdateNavigationTree,       ///< 插入年级、班级
-        FillClassMgmtListModel              ///< 填充班级管理的列表
+        FillGradeList                       ///< 填充年级列表
     };
 
     class AbstractBaseTask : public QObject
@@ -46,13 +46,38 @@ namespace DataEngine
         ~AbstractTask();
 
     protected:
-        void watchFuture(const QFuture<T> &future);
+        template<typename Class>
+        void asyncRun(T (Class::*runFn)());
+        template<typename Class, typename Param1, typename Arg1>
+        void asyncRun(T (Class::*runFn)(Param1), const Arg1 &arg1);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+        void asyncRun(T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+        void asyncRun(T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+        void asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+        void asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
+
+        template<typename Class>
+        void asyncRun(bool (Class::*initFn)(), T (Class::*runFn)());
+        template<typename Class, typename Param1, typename Arg1>
+        void asyncRun(bool (Class::*initFn)(Param1), T (Class::*runFn)(Param1), const Arg1 &arg1);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+        void asyncRun(bool (Class::*initFn)(Param1, Param2), T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+        void asyncRun(bool (Class::*initFn)(Param1, Param2, Param3), T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+        void asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4), T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4);
+        template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+        void asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4, Param5), T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
 
     private:
         void finishDispatcher();
 
     private:
         QFutureWatcher<T> watcher;
+        static QFutureSynchronizer<void> synchronizer;
     };
 
     template<Tasks N, typename T>
@@ -69,14 +94,105 @@ namespace DataEngine
     }
 
     template<Tasks N, typename T>
-    void AbstractTask<N, T>::watchFuture(const QFuture<T> &future)
+    template<typename Class>
+    void AbstractTask<N, T>::asyncRun(T (Class::*runFn)())
     {
-        /*
-            由于QtConcurrent::run返回的QFuture不支持中断、暂停以及进度报告，
-            这里为防止连续两个相同Task并发执行，只能先waitForFinished。
-        */
         watcher.waitForFinished();
-        watcher.setFuture(future);
+        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1>
+    void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1), const Arg1 &arg1)
+    {
+        watcher.waitForFinished();
+        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+    void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2)
+    {
+        watcher.waitForFinished();
+        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+    void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+    {
+        watcher.waitForFinished();
+        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+    void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+    {
+        watcher.waitForFinished();
+        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+    void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+    {
+        watcher.waitForFinished();
+        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4, arg5));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class>
+    void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(), T (Class::*runFn)())
+    {
+        watcher.waitForFinished();
+        if((static_cast<Class*>(this)->*initFn)())
+            watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1>
+    void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1), T (Class::*runFn)(Param1), const Arg1 &arg1)
+    {
+        watcher.waitForFinished();
+        if((static_cast<Class*>(this)->*initFn)(arg1))
+            watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
+    void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2), T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2)
+    {
+        watcher.waitForFinished();
+        if((static_cast<Class*>(this)->*initFn)(arg1, arg2))
+            watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
+    void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3), T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+    {
+        watcher.waitForFinished();
+        if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3))
+            watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
+    void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4), T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+    {
+        watcher.waitForFinished();
+        if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3, arg4))
+            watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4));
+    }
+
+    template<Tasks N, typename T>
+    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
+    void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4, Param5), T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+    {
+        watcher.waitForFinished();
+        if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3, arg4, arg5))
+            watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4, arg5));
     }
 
     template<Tasks N, typename T>
@@ -134,13 +250,24 @@ namespace DataEngine
         bool insertOrUpdateNavigationTree(QTreeWidget *widget, int gradeNum, int classNum, const QString &classType);
     };
 
-    class FillClassMgmtListModelTask : public AbstractTask<FillClassMgmtListModel, bool>
+    class FillGradeListTask : public AbstractTask<FillGradeList, bool>
     {
+        Q_OBJECT
+
     public:
-        void run(QStandardItemModel *model);
+        FillGradeListTask(QObject *parent = 0);
+
+        void run(QTreeWidget *widget, const QString &headName);
+
+    signals:
+        void sendGradeNum(QTreeWidget *widget, const QVariant &data);
+
+    private slots:
+        void addGradeListItem(QTreeWidget *widget, const QVariant &data);
 
     private:
-        bool fillClassMgmtListModel(QStandardItemModel *model);
+        bool syncInit(QTreeWidget *widget, const QString &headName);
+        bool fillGradeList(QTreeWidget *widget, const QString &headName);
     };
 }
 

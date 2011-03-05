@@ -13,17 +13,21 @@ namespace DataEngine
         Task();
         static Task *instance();
 
-        inline void initializeDB(const QString &dbPath);
-        inline void login(const QString &id, const QString &pwd, bool save);
-        inline void fillAccountsListModel(QStandardItemModel *model, int max = 10);
-        inline void fillNavigationTree(QTreeWidget *widget, const QString &rootName);
-        inline void insertOrUpdateNavigationTree(QTreeWidget *widget,
-                                                 int gradeNum,
-                                                 int classNum,
-                                                 const QString &classType);
+        void waitForFinished(int task);
 
     signals:
         void finished(int task, const QVariant &result);
+
+    public slots:
+        void initializeDB(const QString &dbPath);
+        void login(const QString &id, const QString &pwd, bool save);
+        void fillAccountsListModel(QStandardItemModel *model, int max = 10);
+        void fillNavigationTree(QTreeWidget *widget, const QString &rootName);
+        void insertOrUpdateNavigationTree(QTreeWidget *widget,
+                                                 int gradeNum,
+                                                 int classNum,
+                                                 const QString &classType);
+        void fillGradeList(QTreeWidget *widget, const QString &headName);
 
     private:
         Q_DISABLE_COPY(Task)
@@ -32,7 +36,13 @@ namespace DataEngine
         FillAccountsListModelTask           fillAccountsListModelTask;
         FillNavigationTreeTask              fillNavigationTreeTask;
         InsertOrUpdateNavigationTreeTask    insertOrUpdateNavigationTreeTask;
+        FillGradeListTask                   fillGradeListTask;
     };
+
+    inline void Task::waitForFinished(int task)
+    {
+
+    }
 
     inline void Task::initializeDB(const QString &dbPath)
     {
@@ -60,6 +70,11 @@ namespace DataEngine
                                                    const QString &classType)
     {
         insertOrUpdateNavigationTreeTask.run(widget, gradeNum, classNum, classType);
+    }
+
+    inline void Task::fillGradeList(QTreeWidget *widget, const QString &headName)
+    {
+        fillGradeListTask.run(widget, headName);
     }
 }
 

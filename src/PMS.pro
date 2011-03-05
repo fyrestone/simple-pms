@@ -6,18 +6,10 @@
 
 QT       += core gui sql
 
-#project directory
-PROJECT_DIR = E:/Project/PMS
-
-#plugin lib directory
-PLUGIN_DIR = $$PROJECT_DIR/plugin
-
 TARGET = PMS
 TEMPLATE = app
 
 QTPLUGIN += qcncodecs qsqlite
-
-LIBS += -L$$PLUGIN_DIR -lqcncodecs -lqsqlite
 
 CONFIG += precompiled_header
 
@@ -31,7 +23,12 @@ SOURCES += main.cpp\
     engine/dataengine.cpp \
     engine/abstracttask.cpp \
     context/context.cpp \
-    gui/custom/navigationitem.cpp
+    gui/custom/navigationitem.cpp \
+    gui/addclasswizard.cpp \
+    gui/addgradewizard.cpp \
+    gui/selectgradewizardpage.cpp \
+    gui/inputclassinfowizardpage.cpp \
+    gui/inputgradeinfowizardpage.cpp
 
 HEADERS  += pch.h \
     gui/logindlg.h \
@@ -45,12 +42,24 @@ HEADERS  += pch.h \
     gui/tabpage_p.h \
     gui/mainwin_p.h \
     gui/logindlg_p.h \
-    gui/custom/navigationitem.h
+    gui/custom/navigationitem.h \
+    gui/addclasswizard.h \
+    gui/addgradewizard.h \
+    gui/selectgradewizardpage.h \
+    gui/inputclassinfowizardpage.h \
+    gui/inputgradeinfowizardpage.h \
+    gui/inputgradeinfowizardpage_p.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \
     gui/tabpage.ui \
-    gui/aboutdlg.ui
+    gui/aboutdlg.ui \
+    gui/classmgmtdlg.ui \
+    gui/addclasswizard.ui \
+    gui/addgradewizard.ui \
+    gui/selectgradewizardpage.ui \
+    gui/inputclassinfowizardpage.ui \
+    gui/inputgradeinfowizardpage.ui
 
 RC_FILE = ../info/info.rc
 

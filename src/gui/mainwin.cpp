@@ -6,7 +6,10 @@
 
 MainWinPrivate::MainWinPrivate(MainWin *parent) :
     task(DataEngine::Task::instance()),
-    q(parent)
+    q(parent),
+    aboutDlg(parent),
+    addGradeWizard(parent),
+    addClassWizard(parent)
 {
 }
 
@@ -22,11 +25,14 @@ void MainWinPrivate::initializeMember()
     delTabButton.setIcon(delTabIcon);
     delTabButton.setFlat(true);
 
-    addGradeAct = new QAction(tr("添加年级"), this);
-    delGradeAct = new QAction(tr("删除年级"), this);
-    addClassAct = new QAction(tr("添加班级"), this);
-    delClassAct = new QAction(tr("删除班级"), this);
-    modClassTypeAct = new QAction(tr("修改班级类型"), this);
+    QAction *addGradeAct = new QAction(tr("添加年级"), this);
+    QAction *delGradeAct = new QAction(tr("删除年级"), this);
+    QAction *addClassAct = new QAction(tr("添加班级"), this);
+    QAction *delClassAct = new QAction(tr("删除班级"), this);
+    QAction *modClassTypeAct = new QAction(tr("修改班级类型"), this);
+
+    connect(addGradeAct, SIGNAL(triggered()), &addGradeWizard, SLOT(open()));
+    connect(addClassAct, SIGNAL(triggered()), &addClassWizard, SLOT(open()));
 
     rootContextMenu.addAction(addGradeAct);
     gradeContextMenu.addAction(addClassAct);
