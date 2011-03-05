@@ -1,7 +1,7 @@
 #ifndef LOGINDLG_P_H
 #define LOGINDLG_P_H
 
-#include <QtCore/QObject>               /* 使用Q_DECLARE_PUBLIC */
+#include <QtCore/QObject>               /* 继承自QObject */
 #include <QTreeView>                    /* 使用QTreeView */
 #include <QStandardItemModel>           /* 使用QStandardItemModel */
 #include "../engine/dataengine.h"       /* 使用Task */

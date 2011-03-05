@@ -8,9 +8,11 @@
 
 using namespace DataEngine;
 
+int i = qRegisterMetaType<QTreeWidget*>("QTreeWidget*");
+
 void InitializeDBTask::run(const QString &dbPath)
 {
-    watchFuture(QtConcurrent::run(this, &InitializeDBTask::initializeDB, dbPath));
+    asyncRun(&InitializeDBTask::initializeDB, dbPath);
 }
 
 bool InitializeDBTask::initializeDB(const QString &dbPath)
@@ -145,7 +147,7 @@ bool InitializeDBTask::createTable()
         else
             (void)db.rollback();
 
-        qDebug() << "InitializeDBTask::createTable -> " << sql.lastError().text();
+        qDebug() << QThread::currentThreadId() << "InitializeDBTask::createTable -> " << sql.lastError().text();
     }
 
     return success;
@@ -231,7 +233,7 @@ bool InitializeDBTask::fillInitialData()
         else
             (void)db.rollback();
 
-        qDebug() << "InitializeDBTask::fillInitialData -> " << sql.lastError().text();
+        qDebug() << QThread::currentThreadId() << "InitializeDBTask::fillInitialData -> " << sql.lastError().text();
     }
 
     return success;
@@ -239,7 +241,7 @@ bool InitializeDBTask::fillInitialData()
 
 void LoginTask::run(const QString &id, const QString &pwd, bool save)
 {
-    watchFuture(QtConcurrent::run(this, &LoginTask::login, id, pwd, save));
+    asyncRun(&LoginTask::login, id, pwd, save);
 }
 
 bool LoginTask::login(const QString &id, const QString &pwd, bool save)
@@ -277,7 +279,7 @@ bool LoginTask::login(const QString &id, const QString &pwd, bool save)
         }
     }
 
-    qDebug() << "LoginTask::login -> " << sql.lastError().text();
+    qDebug() << QThread::currentThreadId() << "LoginTask::login -> " << sql.lastError().text();
 
     return success;
 }
@@ -301,14 +303,14 @@ bool LoginTask::updateSaveStateAndLoginTime(const QString &id, bool save)
         success = sql.exec();
     }
 
-    qDebug() << "LoginTask::updateSaveStateAndLoginTime -> " << sql.lastError().text();
+    qDebug() << QThread::currentThreadId() << "LoginTask::updateSaveStateAndLoginTime -> " << sql.lastError().text();
 
     return success;
 }
 
 void FillAccountsListModelTask::run(QStandardItemModel *model, int max)
 {
-    watchFuture(QtConcurrent::run(this, &FillAccountsListModelTask::fillAccountsListModel, model, max));
+    asyncRun(&FillAccountsListModelTask::fillAccountsListModel, model, max);
 }
 
 bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model, int max)
@@ -360,14 +362,14 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
         }
     }
 
-    qDebug() << "FillAccountsListModelTask::fillAccountsListModel -> " << sql.lastError().text();
+    qDebug() << QThread::currentThreadId() << "FillAccountsListModelTask::fillAccountsListModel -> " << sql.lastError().text();
 
     return success;
 }
 
 void FillNavigationTreeTask::run(QTreeWidget *widget, const QString &rootName)
 {
-    watchFuture(QtConcurrent::run(this, &FillNavigationTreeTask::fillNavigationTree, widget, rootName));
+    asyncRun(&FillNavigationTreeTask::fillNavigationTree, widget, rootName);
 }
 
 bool FillNavigationTreeTask::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
@@ -407,7 +409,7 @@ bool FillNavigationTreeTask::fillNavigationTree(QTreeWidget *widget, const QStri
         widget->addTopLevelItem(root);
     }
 
-    qDebug() << "FillClassTreeWidgetTask::fillClassTreeWidget -> " << sql.lastError().text();
+    qDebug() << QThread::currentThreadId() << "FillNavigationTreeTask::fillClassTreeWidget -> " << sql.lastError().text();
 
     return true;
 }
@@ -417,8 +419,8 @@ void InsertOrUpdateNavigationTreeTask::run(QTreeWidget *widget,
                                            int classNum,
                                            const QString &classType)
 {
-    watchFuture(QtConcurrent::run(this, &InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree,
-                                  widget, gradeNum, classNum, classType));
+    asyncRun(&InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree,
+             widget, gradeNum, classNum, classType);
 }
 
 bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget *widget,
@@ -494,28 +496,59 @@ bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget 
         }
     }
 
-    qDebug() << "fuck:" << sql.lastError().text();
+    qDebug() << QThread::currentThreadId() << "InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree -> " << sql.lastError().text();
 
     return success;
 }
 
-void FillClassMgmtListModelTask::run(QStandardItemModel *model)
+FillGradeListTask::FillGradeListTask(QObject *parent) :
+    AbstractTask<FillGradeList, bool>(parent)
 {
-    watchFuture(QtConcurrent::run(this, &FillClassMgmtListModelTask::fillClassMgmtListModel, model));
+    connect(this,       SIGNAL(sendGradeNum(QTreeWidget*,QVariant)),
+            this,       SLOT(addGradeListItem(QTreeWidget*,QVariant)));
 }
 
-bool FillClassMgmtListModelTask::fillClassMgmtListModel(QStandardItemModel *model)
+void FillGradeListTask::run(QTreeWidget *widget, const QString &headName)
 {
-    static const QString gradeClassQuery = tr(
-            "SELECT grade, class, type from GradeClass order by grade DESC, class ASC"
+    asyncRun(&FillGradeListTask::syncInit, &FillGradeListTask::fillGradeList, widget, headName);
+}
+
+void FillGradeListTask::addGradeListItem(QTreeWidget *widget, const QVariant &data)
+{
+    qDebug() << "add";
+    QTreeWidgetItem *gradeItem = new QTreeWidgetItem(widget);
+    gradeItem->setData(0, Qt::DisplayRole, data);
+    widget->addTopLevelItem(gradeItem);
+}
+
+bool FillGradeListTask::syncInit(QTreeWidget *widget, const QString &headName)
+{
+    qDebug() << "init";
+    widget->clear();
+
+    QTreeWidgetItem *header = widget->headerItem();
+
+    if(header)
+    {
+        header->setText(0, headName);
+        header->setTextAlignment(0, Qt::AlignCenter);
+    }
+
+    return true;
+}
+
+bool FillGradeListTask::fillGradeList(QTreeWidget *widget, const QString &headName)
+{
+    static const QString gradeQuery = tr(
+            "SELECT grade from GradeClass order by grade DESC"
             );
 
     QSqlQuery sql(QSqlDatabase::database());
 
-    if(sql.exec(gradeClassQuery))
-    {
-        model->clear();
-    }
+    if(sql.exec(gradeQuery))
+        while(sql.next()) emit sendGradeNum(widget, sql.value(0));
+
+    qDebug() << QThread::currentThreadId() << "FillGradeListTask::fillGradeList -> " << sql.lastError().text();
 
     return true;
 }

@@ -4,6 +4,8 @@
 #include <QtCore/QObject>           /* 使用QObject */
 #include <QPushButton>              /* addTabButton/delTabButton */
 #include "aboutdlg.h"               /* 使用AboutDlg */
+#include "addgradewizard.h"         /* 使用AddGradeWizard */
+#include "addclasswizard.h"         /* 使用AddClassWizard */
 #include "../engine/dataengine.h"   /* 使用Task */
 
 class MainWin;
@@ -28,16 +30,13 @@ private:
     DataEngine::Task * const task;
     MainWin * const q;
     AboutDlg aboutDlg;
+    AddGradeWizard addGradeWizard;
+    AddClassWizard addClassWizard;
     QPushButton addTabButton;
     QPushButton delTabButton;
     QMenu rootContextMenu;
     QMenu gradeContextMenu;
     QMenu classContextMenu;
-    QAction *addGradeAct;
-    QAction *delGradeAct;
-    QAction *addClassAct;
-    QAction *delClassAct;
-    QAction *modClassTypeAct;
 };
 
 #endif // MAINWIN_P_H
