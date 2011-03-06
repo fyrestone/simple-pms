@@ -1,4 +1,4 @@
-#include "abstracttask.h"
+#include "tasks.h"
 #include "../context/context.h"
 #include "../gui/custom/navigationitem.h"
 #include <QSqlDatabase>
@@ -8,7 +8,8 @@
 
 using namespace DataEngine;
 
-int i = qRegisterMetaType<QTreeWidget*>("QTreeWidget*");
+int i = qRegisterMetaType<QSqlRecord>("QSqlRecord");                    /* FillAccountsListModelTask */
+int j = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");    /* FillNavigationTreeTask */
 
 void InitializeDBTask::run(const QString &dbPath)
 {
@@ -308,9 +309,71 @@ bool LoginTask::updateSaveStateAndLoginTime(const QString &id, bool save)
     return success;
 }
 
+void InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &classType)
+{
+    asyncRun(&InsertOrUpdateClassTask::insertOrUpdateClass, gradeNum, classNum, classType);
+}
+
+bool InsertOrUpdateClassTask::insertOrUpdateClass(int gradeNum, int classNum, const QString &classType)
+{
+    static const QString insertGradeClass = tr(
+            "INSERT OR REPLACE INTO GradeClass(grade, class, type) "
+                "VALUES (:grade, :class, :type)"
+            );
+
+    bool success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(insertGradeClass))
+    {
+        sql.bindValue(":grade", gradeNum);
+        sql.bindValue(":class", classNum);
+        sql.bindValue(":type", classType);
+
+        success = sql.exec();
+    }
+
+    return success;
+}
+
+FillAccountsListModelTask::FillAccountsListModelTask(QObject *parent) :
+    AbstractTask<FillAccountsListModel, bool>(parent)
+{
+    connect(this,       SIGNAL(sendData(QStandardItemModel*,QSqlRecord)),
+            this,       SLOT(recvData(QStandardItemModel*,QSqlRecord)));
+}
+
 void FillAccountsListModelTask::run(QStandardItemModel *model, int max)
 {
-    asyncRun(&FillAccountsListModelTask::fillAccountsListModel, model, max);
+    asyncRun(&FillAccountsListModelTask::initAccountsListModel,
+             &FillAccountsListModelTask::fillAccountsListModel, model, max);
+}
+
+void FillAccountsListModelTask::recvData(QStandardItemModel *model, const QSqlRecord &record)
+{
+    QList<QStandardItem *> row;
+
+    row.append(new QStandardItem(record.value(0).toString()));     //账号
+    row.append(new QStandardItem(record.value(1).toString()));     //姓名
+    row.append(new QStandardItem(record.value(2).toString()));     //密码
+
+    QStandardItem *savePWD = new QStandardItem();
+    savePWD->setData(record.value(3), Qt::DisplayRole);
+    row.append(savePWD);                                           //是否记住密码
+
+    QStandardItem *autoLogin = new QStandardItem();
+    autoLogin->setData(0, Qt::DisplayRole);
+    row.append(autoLogin);                                         //是否自动登陆
+
+    model->appendRow(row);
+}
+
+bool FillAccountsListModelTask::initAccountsListModel(QStandardItemModel *model, int max)
+{
+    model->clear();
+
+    return true;
 }
 
 bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model, int max)
@@ -335,41 +398,62 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
 
         if(sql.exec())
         {
-            model->clear();
-
-            for(int i = 0; sql.next(); ++i)
-            {
-                QList<QStandardItem *> row;
-
-                /* 线程中创建的对象可以在主线程中安全删除 */
-
-                row.append(new QStandardItem(sql.value(0).toString()));     //账号
-                row.append(new QStandardItem(sql.value(1).toString()));     //姓名
-                row.append(new QStandardItem(sql.value(2).toString()));     //密码
-                QStandardItem *savePWD = new QStandardItem();
-                savePWD->setData(sql.value(3), Qt::DisplayRole);
-                row.append(savePWD);                                        //是否记住密码
-                QStandardItem *autoLogin = new QStandardItem();
-                autoLogin->setData(0, Qt::DisplayRole);
-                row.append(autoLogin);                                      //是否自动登陆
-
-                model->appendRow(row);
-
-                qDebug() << model->rowCount() << sql.value(0) << sql.value(1) << sql.value(2);
-            }
+            while(sql.next()) emit sendData(model, sql.record());
 
             success = true;
         }
     }
 
-    qDebug() << QThread::currentThreadId() << "FillAccountsListModelTask::fillAccountsListModel -> " << sql.lastError().text();
-
     return success;
+}
+
+FillNavigationTreeTask::FillNavigationTreeTask(QObject *parent) :
+    AbstractTask<FillNavigationTree, bool>(parent)
+{
+    connect(this,       SIGNAL(sendData(QTreeWidget*,QList<QSqlRecord>)),
+            this,       SLOT(recvData(QTreeWidget*,QList<QSqlRecord>)));
 }
 
 void FillNavigationTreeTask::run(QTreeWidget *widget, const QString &rootName)
 {
-    asyncRun(&FillNavigationTreeTask::fillNavigationTree, widget, rootName);
+    asyncRun(&FillNavigationTreeTask::initNavigationTree,
+             &FillNavigationTreeTask::fillNavigationTree, widget, rootName);
+}
+
+void FillNavigationTreeTask::recvData(QTreeWidget *widget, const QList<QSqlRecord> &data)
+{
+    NavigationItem *lastGradeItem = NULL;
+    int lastGradeNum = -1;
+
+    for(i = 0; i < data.count(); ++i)
+    {
+        int currGradeNum = data.at(i).value(0).toInt();
+        int currClassNum = data.at(i).value(1).toInt();
+
+        if(currGradeNum != lastGradeNum)
+        {
+            lastGradeNum = currGradeNum;
+
+            lastGradeItem = new NavigationItem(widget->topLevelItem(0), NavigationItem::Grade);
+            lastGradeItem->setText(0, QString::number(currGradeNum) + tr("级"));
+            lastGradeItem->setData(0, NavigationItem::ExtraData, currGradeNum);
+        }
+
+        NavigationItem *classItem = new NavigationItem(lastGradeItem, NavigationItem::Class);
+        classItem->setText(0, QString::number(currClassNum) + tr("班"));
+        classItem->setData(0, NavigationItem::ExtraData, currClassNum);
+    }
+}
+
+bool FillNavigationTreeTask::initNavigationTree(QTreeWidget *widget, const QString &rootName)
+{
+    widget->clear();
+
+    NavigationItem *root  = new NavigationItem(NavigationItem::Root);   //根结点
+    root->setText(0, rootName);
+    widget->addTopLevelItem(root);
+
+    return true;
 }
 
 bool FillNavigationTreeTask::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
@@ -378,125 +462,20 @@ bool FillNavigationTreeTask::fillNavigationTree(QTreeWidget *widget, const QStri
             "SELECT grade, class from GradeClass order by grade DESC, class ASC"
             );
 
-    QSqlQuery sql(QSqlDatabase::database());
-
-    if(sql.exec(gradeClassQuery))
-    {
-        NavigationItem *root  = new NavigationItem(NavigationItem::Root);   //根结点
-        NavigationItem *lastGradeItem = NULL;                               //上次年级节点
-        int lastGradeNum = -1;                                              //上次年级号
-
-        root->setText(0, rootName);
-
-        while(sql.next())
-        {
-            int gradeNum = sql.value(0).toInt();
-
-            if(gradeNum != lastGradeNum)
-            {
-                lastGradeNum = gradeNum;
-                lastGradeItem = new NavigationItem(root, NavigationItem::Grade);
-                lastGradeItem->setText(0, QString::number(gradeNum) + tr("级"));
-                lastGradeItem->setData(0, NavigationItem::ExtraData, gradeNum);
-            }
-
-            NavigationItem *classItem = new NavigationItem(lastGradeItem, NavigationItem::Class);
-            classItem->setText(0, sql.value(1).toString() + tr("班"));
-            classItem->setData(0, NavigationItem::ExtraData, sql.value(1));
-        }
-
-        widget->clear();
-        widget->addTopLevelItem(root);
-    }
-
-    qDebug() << QThread::currentThreadId() << "FillNavigationTreeTask::fillClassTreeWidget -> " << sql.lastError().text();
-
-    return true;
-}
-
-void InsertOrUpdateNavigationTreeTask::run(QTreeWidget *widget,
-                                           int gradeNum,
-                                           int classNum,
-                                           const QString &classType)
-{
-    asyncRun(&InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree,
-             widget, gradeNum, classNum, classType);
-}
-
-bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget *widget,
-                                                                    int gradeNum,
-                                                                    int classNum,
-                                                                    const QString &classType)
-{
-    static const QString insertGradeClass = tr(
-            "INSERT OR REPLACE INTO GradeClass(grade, class, type) "
-                "VALUES (:grade, :class, :type)"
-            );
-
     bool success = false;
 
     QSqlQuery sql(QSqlDatabase::database());
 
-    if(sql.prepare(insertGradeClass))
+    if(sql.exec(gradeClassQuery))
     {
-        sql.bindValue(":grade", gradeNum);
-        sql.bindValue(":class", classNum);
-        sql.bindValue(":type", classType);
+        QList<QSqlRecord> recordSet;
 
-        success = sql.exec();
+        while(sql.next()) recordSet.push_back(sql.record());
 
-        QTreeWidgetItem *root = widget->topLevelItem(0);
+        emit sendData(widget, recordSet);
 
-        Q_ASSERT_X(root,                                                     //断言
-                   "InsertOrUpdateClassTreeTask::insertOrUpdateClassTree",   //位置
-                   "Tree has not been initialized!");                        //原因
-        if(root)
-        {
-            QTreeWidgetItem *gradeItem = NULL;
-
-            for(int i = 0; i < root->childCount(); ++i)
-            {
-                QTreeWidgetItem *curGradeItem = root->child(i);
-
-                if(curGradeItem && curGradeItem->type() == NavigationItem::Grade &&
-                   curGradeItem->data(0, NavigationItem::ExtraData).toInt() == gradeNum)
-                {
-                    gradeItem = curGradeItem;
-                    break;
-                }
-            }
-
-            if(!gradeItem)
-            {
-                gradeItem = new NavigationItem(root, NavigationItem::Grade);
-                gradeItem->setText(0, QString::number(gradeNum) + tr("级"));
-                gradeItem->setData(0, NavigationItem::ExtraData, gradeNum);
-            }
-
-            QTreeWidgetItem *classItem = NULL;
-
-            for(int i = 0; i < gradeItem->childCount(); ++i)
-            {
-                QTreeWidgetItem *curClassItem = gradeItem->child(i);
-
-                if(curClassItem && curClassItem->type() == NavigationItem::Class &&
-                   curClassItem->data(0, NavigationItem::ExtraData).toInt() == classNum)
-                {
-                    classItem = curClassItem;
-                    break;
-                }
-            }
-
-            if(!classItem)
-            {
-                classItem = new NavigationItem(gradeItem, NavigationItem::Class);
-                classItem->setText(0, QString::number(classNum) + tr("班"));
-                classItem->setData(0, NavigationItem::ExtraData, classNum);
-            }
-        }
+        success = true;
     }
-
-    qDebug() << QThread::currentThreadId() << "InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree -> " << sql.lastError().text();
 
     return success;
 }
@@ -504,26 +483,25 @@ bool InsertOrUpdateNavigationTreeTask::insertOrUpdateNavigationTree(QTreeWidget 
 FillGradeListTask::FillGradeListTask(QObject *parent) :
     AbstractTask<FillGradeList, bool>(parent)
 {
-    connect(this,       SIGNAL(sendGradeNum(QTreeWidget*,QVariant)),
-            this,       SLOT(addGradeListItem(QTreeWidget*,QVariant)));
+    connect(this,       SIGNAL(sendData(QTreeWidget*,QVariant)),
+            this,       SLOT(recvData(QTreeWidget*,QVariant)));
 }
 
 void FillGradeListTask::run(QTreeWidget *widget, const QString &headName)
 {
-    asyncRun(&FillGradeListTask::syncInit, &FillGradeListTask::fillGradeList, widget, headName);
+    asyncRun(&FillGradeListTask::initGradeList, &FillGradeListTask::fillGradeList, widget, headName);
 }
 
-void FillGradeListTask::addGradeListItem(QTreeWidget *widget, const QVariant &data)
+void FillGradeListTask::recvData(QTreeWidget *widget, const QVariant &data)
 {
-    qDebug() << "add";
     QTreeWidgetItem *gradeItem = new QTreeWidgetItem(widget);
     gradeItem->setData(0, Qt::DisplayRole, data);
+    gradeItem->setTextAlignment(0, Qt::AlignCenter);
     widget->addTopLevelItem(gradeItem);
 }
 
-bool FillGradeListTask::syncInit(QTreeWidget *widget, const QString &headName)
+bool FillGradeListTask::initGradeList(QTreeWidget *widget, const QString &headName)
 {
-    qDebug() << "init";
     widget->clear();
 
     QTreeWidgetItem *header = widget->headerItem();
@@ -540,15 +518,19 @@ bool FillGradeListTask::syncInit(QTreeWidget *widget, const QString &headName)
 bool FillGradeListTask::fillGradeList(QTreeWidget *widget, const QString &headName)
 {
     static const QString gradeQuery = tr(
-            "SELECT grade from GradeClass order by grade DESC"
+            "SELECT DISTINCT grade from GradeClass order by grade DESC"
             );
+
+    bool success = false;
 
     QSqlQuery sql(QSqlDatabase::database());
 
     if(sql.exec(gradeQuery))
-        while(sql.next()) emit sendGradeNum(widget, sql.value(0));
+    {
+        while(sql.next()) emit sendData(widget, sql.value(0));
 
-    qDebug() << QThread::currentThreadId() << "FillGradeListTask::fillGradeList -> " << sql.lastError().text();
+        success = true;
+    }
 
-    return true;
+    return success;
 }
