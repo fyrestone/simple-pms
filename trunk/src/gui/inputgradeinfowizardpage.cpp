@@ -13,11 +13,13 @@ InputGradeInfoWizardPagePrivate::InputGradeInfoWizardPagePrivate(InputGradeInfoW
 void InputGradeInfoWizardPagePrivate::initializeMember()
 {
     q->ui->gradeLineEdit->setValidator(new QIntValidator(this));
+    q->registerField("gradeNum", q->ui->gradeLineEdit);
 }
 
 void InputGradeInfoWizardPagePrivate::connectSignalsAndSlots()
 {
-
+    connect(q->ui->gradeLineEdit,       SIGNAL(textChanged(QString)),
+            q,                          SIGNAL(completeChanged()));
 }
 
 void InputGradeInfoWizardPagePrivate::completeConstruct()
@@ -29,7 +31,6 @@ void InputGradeInfoWizardPagePrivate::finished(int taskID, const QVariant &resul
 {
 
 }
-
 
 InputGradeInfoWizardPage::InputGradeInfoWizardPage(QWidget *parent) :
     QWizardPage(parent),
@@ -50,4 +51,12 @@ InputGradeInfoWizardPage::~InputGradeInfoWizardPage()
 void InputGradeInfoWizardPage::initializePage()
 {
     d->completeConstruct();
+}
+
+bool InputGradeInfoWizardPage::isComplete() const
+{
+    QString gradeNum = field("gradeNum").toString();
+    QList<QTreeWidgetItem *> match = ui->gradeTreeWidget->findItems(gradeNum, Qt::MatchExactly);
+
+    return !gradeNum.isEmpty() && match.isEmpty();
 }

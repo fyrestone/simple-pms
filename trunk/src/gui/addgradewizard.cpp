@@ -7,6 +7,11 @@ AddGradeWizard::AddGradeWizard(QWidget *parent) :
     ui(new Ui::AddGradeWizard)
 {
     ui->setupUi(this);
+
+    setFixedSize(width(), height());
+    setButtonText(QWizard::FinishButton, tr("完成"));
+    setButtonText(QWizard::CancelButton, tr("取消"));
+
     addPage(new InputGradeInfoWizardPage);
 }
 

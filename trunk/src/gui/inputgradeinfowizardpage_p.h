@@ -9,6 +9,7 @@ class InputGradeInfoWizardPage;
 class InputGradeInfoWizardPagePrivate : public QObject
 {
     Q_OBJECT
+
 public:
     InputGradeInfoWizardPagePrivate(InputGradeInfoWizardPage *parent);
 
