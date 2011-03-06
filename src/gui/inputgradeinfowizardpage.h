@@ -20,6 +20,7 @@ public:
     ~InputGradeInfoWizardPage();
 
     void initializePage();
+    bool isComplete() const;
 
 private:
     Q_DISABLE_COPY(InputGradeInfoWizardPage)

@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>添加年级向导</string>
   </property>
+  <property name="wizardStyle">
+   <enum>QWizard::AeroStyle</enum>
+  </property>
  </widget>
  <resources/>
  <connections/>
