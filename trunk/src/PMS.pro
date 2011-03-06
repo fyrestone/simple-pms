@@ -21,14 +21,14 @@ SOURCES += main.cpp\
     gui/tabpage.cpp \
     gui/aboutdlg.cpp \
     engine/dataengine.cpp \
-    engine/abstracttask.cpp \
     context/context.cpp \
     gui/custom/navigationitem.cpp \
     gui/addclasswizard.cpp \
     gui/addgradewizard.cpp \
     gui/selectgradewizardpage.cpp \
     gui/inputclassinfowizardpage.cpp \
-    gui/inputgradeinfowizardpage.cpp
+    gui/inputgradeinfowizardpage.cpp \
+    engine/tasks.cpp
 
 HEADERS  += pch.h \
     gui/logindlg.h \
@@ -36,7 +36,6 @@ HEADERS  += pch.h \
     gui/tabpage.h \
     gui/aboutdlg.h \
     engine/dataengine.h \
-    engine/abstracttask.h \
     context/permission.h \
     context/context.h \
     gui/tabpage_p.h \
@@ -48,7 +47,9 @@ HEADERS  += pch.h \
     gui/selectgradewizardpage.h \
     gui/inputclassinfowizardpage.h \
     gui/inputgradeinfowizardpage.h \
-    gui/inputgradeinfowizardpage_p.h
+    gui/inputgradeinfowizardpage_p.h \
+    engine/tasks.h \
+    engine/tasktemplate.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \

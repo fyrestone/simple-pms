@@ -1,7 +1,7 @@
 #ifndef DATAENGINE_H
 #define DATAENGINE_H
 
-#include "abstracttask.h"
+#include "tasks.h"
 
 namespace DataEngine
 {
@@ -21,21 +21,18 @@ namespace DataEngine
     public slots:
         void initializeDB(const QString &dbPath);
         void login(const QString &id, const QString &pwd, bool save);
+        void insertOrUpdateClass(int gradeNum, int classNum, const QString &classType);
         void fillAccountsListModel(QStandardItemModel *model, int max = 10);
         void fillNavigationTree(QTreeWidget *widget, const QString &rootName);
-        void insertOrUpdateNavigationTree(QTreeWidget *widget,
-                                                 int gradeNum,
-                                                 int classNum,
-                                                 const QString &classType);
         void fillGradeList(QTreeWidget *widget, const QString &headName);
 
     private:
         Q_DISABLE_COPY(Task)
         InitializeDBTask                    initializeDBTask;
         LoginTask                           loginTask;
+        InsertOrUpdateClassTask             insertOrUpdateClassTask;
         FillAccountsListModelTask           fillAccountsListModelTask;
         FillNavigationTreeTask              fillNavigationTreeTask;
-        InsertOrUpdateNavigationTreeTask    insertOrUpdateNavigationTreeTask;
         FillGradeListTask                   fillGradeListTask;
     };
 
@@ -54,6 +51,11 @@ namespace DataEngine
         loginTask.run(id, pwd, save);
     }
 
+    inline void Task::insertOrUpdateClass(int gradeNum, int classNum, const QString &classType)
+    {
+        insertOrUpdateClassTask.run(gradeNum, classNum, classType);
+    }
+
     inline void Task::fillAccountsListModel(QStandardItemModel *model, int max)
     {
         fillAccountsListModelTask.run(model, max);
@@ -62,14 +64,6 @@ namespace DataEngine
     inline void Task::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
     {
         fillNavigationTreeTask.run(widget, rootName);
-    }
-
-    inline void Task::insertOrUpdateNavigationTree(QTreeWidget *widget,
-                                                   int gradeNum,
-                                                   int classNum,
-                                                   const QString &classType)
-    {
-        insertOrUpdateNavigationTreeTask.run(widget, gradeNum, classNum, classType);
     }
 
     inline void Task::fillGradeList(QTreeWidget *widget, const QString &headName)

@@ -66,11 +66,11 @@ void MainWinPrivate::finished(int taskID, const QVariant &result)
     {
     case DataEngine::FillNavigationTree:
         if(result.type() == QVariant::Bool && result.toBool())
-            task->insertOrUpdateNavigationTree(q->ui->navigationTree, 2006, 2, "fuck");
+        {}
         break;
-    case DataEngine::InsertOrUpdateNavigationTree:
+    case DataEngine::InsertOrUpdateClass:
         if(result.type() == QVariant::Bool && result.toBool())
-            q->ui->navigationTree->setExpanded(q->ui->navigationTree->model()->index(0, 0), true);
+            task->fillNavigationTree(q->ui->navigationTree, tr("驻马店第一初级中学"));
         break;
     }
 }
