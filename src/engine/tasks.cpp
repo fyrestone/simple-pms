@@ -13,7 +13,7 @@ int j = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");    /* FillN
 
 void InitializeDBTask::run(const QString &dbPath)
 {
-    asyncRun(&InitializeDBTask::initializeDB, dbPath);
+    //asyncRun(&InitializeDBTask::initializeDB, dbPath);
 }
 
 bool InitializeDBTask::initializeDB(const QString &dbPath)
@@ -242,7 +242,7 @@ bool InitializeDBTask::fillInitialData()
 
 void LoginTask::run(const QString &id, const QString &pwd, bool save)
 {
-    asyncRun(&LoginTask::login, id, pwd, save);
+    //asyncRun(&LoginTask::login, id, pwd, save);
 }
 
 bool LoginTask::login(const QString &id, const QString &pwd, bool save)
@@ -311,7 +311,7 @@ bool LoginTask::updateSaveStateAndLoginTime(const QString &id, bool save)
 
 void InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &classType)
 {
-    asyncRun(&InsertOrUpdateClassTask::insertOrUpdateClass, gradeNum, classNum, classType);
+    //asyncRun(&InsertOrUpdateClassTask::insertOrUpdateClass, gradeNum, classNum, classType);
 }
 
 bool InsertOrUpdateClassTask::insertOrUpdateClass(int gradeNum, int classNum, const QString &classType)
@@ -346,6 +346,7 @@ FillAccountsListModelTask::FillAccountsListModelTask(QObject *parent) :
 
 void FillAccountsListModelTask::run(QStandardItemModel *model, int max)
 {
+    setAsyncRunEntry(&FillAccountsListModelTask::fillAccountsListModel);
     //asyncRun(&FillAccountsListModelTask::initAccountsListModel,
     //         &FillAccountsListModelTask::fillAccountsListModel, model, max);
 }
