@@ -28,10 +28,11 @@ namespace DataEngine
     class InitializeDBTask : public AbstractTask<InitializeDBTask, InitializeDB, bool>
     {
     public:
-        void run(const QString &dbPath);
+        InitializeDBTask(QObject *parent = 0);
+
+        bool run(const QString &dbPath);
 
     private:
-        bool initializeDB(const QString &dbPath);
         bool createConnection(const QString &dbPath);
         bool createTable();
         bool fillInitialData();
@@ -40,20 +41,20 @@ namespace DataEngine
     class LoginTask : public AbstractTask<LoginTask, Login, bool>
     {
     public:
-        void run(const QString &id, const QString &pwd, bool save);
+        LoginTask(QObject *parent = 0);
+
+        bool run(const QString &id, const QString &pwd, bool save);
 
     private:
-        bool login(const QString &id, const QString &pwd, bool save);
         bool updateSaveStateAndLoginTime(const QString &id, bool save);
     };
 
     class InsertOrUpdateClassTask : public AbstractTask<InsertOrUpdateClassTask, InsertOrUpdateClass, bool>
     {
     public:
-        void run(int gradeNum, int classNum, const QString &classType);
+        InsertOrUpdateClassTask(QObject *parent = 0);
 
-    private:
-        bool insertOrUpdateClass(int gradeNum, int classNum, const QString &classType);
+        bool run(int gradeNum, int classNum, const QString &classType);
     };
 
     class FillAccountsListModelTask : public AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>
@@ -63,17 +64,15 @@ namespace DataEngine
     public:
         FillAccountsListModelTask(QObject *parent = 0);
 
-        void run(QStandardItemModel *model, int max);
+        bool run(QStandardItemModel *model, int max);
 
     signals:
+        void querySuccess(QStandardItemModel *model);
         void sendData(QStandardItemModel *model, const QSqlRecord &record);
 
     private slots:
+        void initModel(QStandardItemModel *model);
         void recvData(QStandardItemModel *model, const QSqlRecord &record);
-
-    private:
-        bool initAccountsListModel(QStandardItemModel *model, int max);
-        bool fillAccountsListModel(QStandardItemModel *model, int max);
     };
 
     class FillNavigationTreeTask : public AbstractTask<FillNavigationTreeTask, FillNavigationTree, bool>
@@ -83,17 +82,15 @@ namespace DataEngine
     public:
         FillNavigationTreeTask(QObject *parent = 0);
 
-        void run(QTreeWidget *widget, const QString &rootName);
+        bool run(QTreeWidget *widget, const QString &rootName);
 
     signals:
-        void sendData(QTreeWidget *widget, const QList<QSqlRecord> &data);
+        void querySuccess(QTreeWidget *widget, const QString &rootName);
+        void sendData(QTreeWidget *widget, const QList<QSqlRecord> &data);  
 
     private slots:
+        void initWidget(QTreeWidget *widget, const QString &rootName);
         void recvData(QTreeWidget *widget, const QList<QSqlRecord> &data);
-
-    private:
-        bool initNavigationTree(QTreeWidget *widget, const QString &rootName);
-        bool fillNavigationTree(QTreeWidget *widget, const QString &rootName);
     };
 
     class FillGradeListTask : public AbstractTask<FillGradeListTask, FillGradeList, bool>
@@ -103,17 +100,15 @@ namespace DataEngine
     public:
         FillGradeListTask(QObject *parent = 0);
 
-        void run(QTreeWidget *widget, const QString &headName);
+        bool run(QTreeWidget *widget, const QString &headName);
 
     signals:
+        void querySuccess(QTreeWidget *widget, const QString &headName);
         void sendData(QTreeWidget *widget, const QVariant &data);
 
     private slots:
+        void initWidget(QTreeWidget *widget, const QString &headName);
         void recvData(QTreeWidget *widget, const QVariant &data);
-
-    private:
-        bool initGradeList(QTreeWidget *widget, const QString &headName);
-        bool fillGradeList(QTreeWidget *widget, const QString &headName);
     };
 }
 

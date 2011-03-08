@@ -43,33 +43,32 @@ namespace DataEngine
 
     inline void Task::initializeDB(const QString &dbPath)
     {
-        initializeDBTask.run(dbPath);
+        initializeDBTask.asyncRun(dbPath);
     }
 
     inline void Task::login(const QString &id, const QString &pwd, bool save)
     {
-        loginTask.run(id, pwd, save);
+        loginTask.asyncRun(id, pwd, save);
     }
 
     inline void Task::insertOrUpdateClass(int gradeNum, int classNum, const QString &classType)
     {
-        insertOrUpdateClassTask.run(gradeNum, classNum, classType);
+        insertOrUpdateClassTask.asyncRun(gradeNum, classNum, classType);
     }
 
     inline void Task::fillAccountsListModel(QStandardItemModel *model, int max)
     {
-        fillAccountsListModelTask.run(model, max);
         fillAccountsListModelTask.asyncRun(model, max);
     }
 
     inline void Task::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
     {
-        fillNavigationTreeTask.run(widget, rootName);
+        fillNavigationTreeTask.asyncRun(widget, rootName);
     }
 
     inline void Task::fillGradeList(QTreeWidget *widget, const QString &headName)
     {
-        fillGradeListTask.run(widget, headName);
+        fillGradeListTask.asyncRun(widget, headName);
     }
 }
 
