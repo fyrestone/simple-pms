@@ -346,8 +346,8 @@ FillAccountsListModelTask::FillAccountsListModelTask(QObject *parent) :
 
 void FillAccountsListModelTask::run(QStandardItemModel *model, int max)
 {
-    asyncRun(&FillAccountsListModelTask::initAccountsListModel,
-             &FillAccountsListModelTask::fillAccountsListModel, model, max);
+    //asyncRun(&FillAccountsListModelTask::initAccountsListModel,
+    //         &FillAccountsListModelTask::fillAccountsListModel, model, max);
 }
 
 void FillAccountsListModelTask::recvData(QStandardItemModel *model, const QSqlRecord &record)
@@ -416,8 +416,8 @@ FillNavigationTreeTask::FillNavigationTreeTask(QObject *parent) :
 
 void FillNavigationTreeTask::run(QTreeWidget *widget, const QString &rootName)
 {
-    asyncRun(&FillNavigationTreeTask::initNavigationTree,
-             &FillNavigationTreeTask::fillNavigationTree, widget, rootName);
+    //asyncRun(&FillNavigationTreeTask::initNavigationTree,
+    //         &FillNavigationTreeTask::fillNavigationTree, widget, rootName);
 }
 
 void FillNavigationTreeTask::recvData(QTreeWidget *widget, const QList<QSqlRecord> &data)
@@ -489,7 +489,7 @@ FillGradeListTask::FillGradeListTask(QObject *parent) :
 
 void FillGradeListTask::run(QTreeWidget *widget, const QString &headName)
 {
-    asyncRun(&FillGradeListTask::initGradeList, &FillGradeListTask::fillGradeList, widget, headName);
+    //asyncRun(&FillGradeListTask::initGradeList, &FillGradeListTask::fillGradeList, widget, headName);
 }
 
 void FillGradeListTask::recvData(QTreeWidget *widget, const QVariant &data)

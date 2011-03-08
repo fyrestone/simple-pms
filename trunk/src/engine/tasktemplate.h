@@ -3,6 +3,24 @@
 
 namespace DataEngine
 {
+class WrapperBase
+{
+
+};
+
+template<typename FuncType>
+class MemberFuncWrapper : public WrapperBase
+{
+public:
+    MemberFuncWrapper(FuncType fnPtr) :
+        ptr(fnPtr) {}
+
+    FuncType FuncPtr() const {return ptr;}
+
+private:
+    FuncType ptr;
+};
+
 class AbstractBaseTask : public QObject
 {
     Q_OBJECT
@@ -40,30 +58,29 @@ protected:
     template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
     void asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
 
-    template<typename Class>
-    void asyncRun(bool (Class::*initFn)(), T (Class::*runFn)());
-    template<typename Class, typename Param1, typename Arg1>
-    void asyncRun(bool (Class::*initFn)(Param1), T (Class::*runFn)(Param1), const Arg1 &arg1);
-    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
-    void asyncRun(bool (Class::*initFn)(Param1, Param2), T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2);
-    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
-    void asyncRun(bool (Class::*initFn)(Param1, Param2, Param3), T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3);
-    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
-    void asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4), T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4);
-    template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
-    void asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4, Param5), T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
+    void setAsyncRunEntry(T (C::*runFn)());
+    template<typename Param1>
+    void setAsyncRunEntry(T (C::*runFn)(Param1));
+    template<typename Param1, typename Param2>
+    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2));
+    template<typename Param1, typename Param2, typename Param3>
+    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3));
+    template<typename Param1, typename Param2, typename Param3, typename Param4>
+    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4));
+    template<typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
+    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5));
 
 private:
     void finishDispatcher();
 
 private:
     QFutureWatcher<T> watcher;
-    static QFutureSynchronizer<void> synchronizer;
+    WrapperBase const *wrapper;
 };
 
 template<typename C, int N, typename T>
 AbstractTask<C, N, T>::AbstractTask(QObject *parent)
-    :AbstractBaseTask(parent)
+    :AbstractBaseTask(parent), wrapper(0)
 {
     connect(&watcher, SIGNAL(finished()), this, SLOT(finishDispatcher()));
 }
@@ -71,7 +88,7 @@ AbstractTask<C, N, T>::AbstractTask(QObject *parent)
 template<typename C, int N, typename T>
 AbstractTask<C, N, T>::~AbstractTask()
 {
-
+    delete wrapper;
 }
 
 template<typename C, int N, typename T>
@@ -123,57 +140,74 @@ inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Pa
 }
 
 template<typename C, int N, typename T>
-template<typename Class>
-inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(), T (Class::*runFn)())
+void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)())
 {
-    watcher.waitForFinished();
-    if((static_cast<Class*>(this)->*initFn)())
-        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn));
+    if(wrapper)
+    {
+        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)()>(runFn);
+        delete wrapper;
+        wrapper = newWrapper;
+    }
 }
 
 template<typename C, int N, typename T>
-template<typename Class, typename Param1, typename Arg1>
-inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1), T (Class::*runFn)(Param1), const Arg1 &arg1)
+template<typename Param1>
+void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1))
 {
-    watcher.waitForFinished();
-    if((static_cast<Class*>(this)->*initFn)(arg1))
-        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1));
+    if(wrapper)
+    {
+        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1)>(runFn);
+        delete wrapper;
+        wrapper = newWrapper;
+    }
 }
 
 template<typename C, int N, typename T>
-template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
-inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2), T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2)
+template<typename Param1, typename Param2>
+void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2))
 {
-    watcher.waitForFinished();
-    if((static_cast<Class*>(this)->*initFn)(arg1, arg2))
-        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2));
+    if(wrapper)
+    {
+        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2)>(runFn);
+        delete wrapper;
+        wrapper = newWrapper;
+    }
 }
 
 template<typename C, int N, typename T>
-template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
-inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3), T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+template<typename Param1, typename Param2, typename Param3>
+void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3))
 {
-    watcher.waitForFinished();
-    if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3))
-        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3));
+    if(wrapper)
+    {
+        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3)>(runFn);
+        delete wrapper;
+        wrapper = newWrapper;
+    }
 }
 
 template<typename C, int N, typename T>
-template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
-inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4), T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+template<typename Param1, typename Param2, typename Param3, typename Param4>
+void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4))
 {
-    watcher.waitForFinished();
-    if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3, arg4))
-        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4));
+    if(wrapper)
+    {
+        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3, Param4)>(runFn);
+        delete wrapper;
+        wrapper = newWrapper;
+    }
 }
 
 template<typename C, int N, typename T>
-template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
-inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4, Param5), T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+template<typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
+void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5))
 {
-    watcher.waitForFinished();
-    if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3, arg4, arg5))
-        watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4, arg5));
+    if(wrapper)
+    {
+        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3, Param4, Param5)>(runFn);
+        delete wrapper;
+        wrapper = newWrapper;
+    }
 }
 
 template<typename C, int N, typename T>
