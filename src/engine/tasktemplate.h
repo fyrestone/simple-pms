@@ -44,7 +44,6 @@ public:
     AbstractTask(QObject *parent = 0);
     ~AbstractTask();
 
-protected:
     template<typename Class>
     void asyncRun(T (Class::*runFn)());
     template<typename Class, typename Param1, typename Arg1>
@@ -58,6 +57,7 @@ protected:
     template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
     void asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
 
+protected:
     void setAsyncRunEntry(T (C::*runFn)());
     template<typename Param1>
     void setAsyncRunEntry(T (C::*runFn)(Param1));
@@ -142,72 +142,55 @@ inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Pa
 template<typename C, int N, typename T>
 void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)())
 {
-    if(wrapper)
-    {
-        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)()>(runFn);
-        delete wrapper;
-        wrapper = newWrapper;
-    }
+    if(wrapper) delete wrapper;
+
+    wrapper = new MemberFuncWrapper<T (C::*)()>(runFn);
 }
 
 template<typename C, int N, typename T>
 template<typename Param1>
 void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1))
 {
-    if(wrapper)
-    {
-        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1)>(runFn);
-        delete wrapper;
-        wrapper = newWrapper;
-    }
+    if(wrapper) delete wrapper;
+
+    wrapper = new MemberFuncWrapper<T (C::*)(Param1)>(runFn);
 }
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2>
 void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2))
 {
-    if(wrapper)
-    {
-        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2)>(runFn);
-        delete wrapper;
-        wrapper = newWrapper;
-    }
+    if(wrapper) delete wrapper;
+
+    wrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2)>(runFn);
 }
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2, typename Param3>
 void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3))
 {
-    if(wrapper)
-    {
-        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3)>(runFn);
-        delete wrapper;
-        wrapper = newWrapper;
-    }
+    if(wrapper) delete wrapper;
+
+    wrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3)>(runFn);
 }
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2, typename Param3, typename Param4>
 void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4))
 {
-    if(wrapper)
-    {
-        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3, Param4)>(runFn);
-        delete wrapper;
-        wrapper = newWrapper;
-    }
+    if(wrapper) delete wrapper;
+
+    wrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3, Param4)>(runFn);
+
 }
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
 void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5))
 {
-    if(wrapper)
-    {
-        WrapperBase *newWrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3, Param4, Param5)>(runFn);
-        delete wrapper;
-        wrapper = newWrapper;
-    }
+    if(wrapper) delete wrapper;
+
+    wrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3, Param4, Param5)>(runFn);
 }
 
 template<typename C, int N, typename T>
