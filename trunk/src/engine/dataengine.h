@@ -59,6 +59,7 @@ namespace DataEngine
     inline void Task::fillAccountsListModel(QStandardItemModel *model, int max)
     {
         fillAccountsListModelTask.run(model, max);
+        fillAccountsListModelTask.asyncRun(model, max);
     }
 
     inline void Task::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
