@@ -3,6 +3,9 @@
 
 namespace DataEngine
 {
+
+#define ENGINE_ASYNC_FUNC_NAME asyncRun
+
 class WrapperBase
 {
 
@@ -44,17 +47,17 @@ public:
     AbstractTask(QObject *parent = 0);
     ~AbstractTask();
 
-    void asyncRun();
+    void ENGINE_ASYNC_FUNC_NAME();
     template<typename Arg1>
-    void asyncRun(const Arg1 &arg1);
+    void ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1);
     template<typename Arg1, typename Arg2>
-    void asyncRun(const Arg1 &arg1, const Arg2 &arg2);
+    void ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2);
     template<typename Arg1, typename Arg2, typename Arg3>
-    void asyncRun(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3);
+    void ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3);
     template<typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-    void asyncRun(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4);
+    void ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4);
     template<typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
-    void asyncRun(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
+    void ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
 
 protected:
     void setAsyncRunEntry(T (C::*runFn)());
@@ -91,7 +94,7 @@ AbstractTask<C, N, T>::~AbstractTask()
 }
 
 template<typename C, int N, typename T>
-inline void AbstractTask<C, N, T>::asyncRun()
+inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME()
 {
     typedef const MemberFuncWrapper<T (C::*)()> *WrapperType;
 
@@ -102,7 +105,7 @@ inline void AbstractTask<C, N, T>::asyncRun()
 
 template<typename C, int N, typename T>
 template<typename Arg1>
-inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1)
+inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1)
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1)> *WrapperType;
 
@@ -113,7 +116,7 @@ inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1)
 
 template<typename C, int N, typename T>
 template<typename Arg1, typename Arg2>
-inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1, const Arg2 &arg2)
+inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2)
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2)> *WrapperType;
 
@@ -124,7 +127,7 @@ inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1, const Arg2 &arg2)
 
 template<typename C, int N, typename T>
 template<typename Arg1, typename Arg2, typename Arg3>
-inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3)> *WrapperType;
 
@@ -135,7 +138,7 @@ inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1, const Arg2 &arg2, 
 
 template<typename C, int N, typename T>
 template<typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3, Arg4)> *WrapperType;
 
@@ -146,7 +149,7 @@ inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1, const Arg2 &arg2, 
 
 template<typename C, int N, typename T>
 template<typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
-inline void AbstractTask<C, N, T>::asyncRun(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3, Arg4, Arg5)> *WrapperType;
 
