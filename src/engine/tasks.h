@@ -25,7 +25,7 @@ namespace DataEngine
         FillGradeList                       ///< 填充年级列表
     };
 
-    class InitializeDBTask : public AbstractTask<InitializeDB, bool>
+    class InitializeDBTask : public AbstractTask<InitializeDBTask, InitializeDB, bool>
     {
     public:
         void run(const QString &dbPath);
@@ -37,7 +37,7 @@ namespace DataEngine
         bool fillInitialData();
     };
 
-    class LoginTask : public AbstractTask<Login, bool>
+    class LoginTask : public AbstractTask<LoginTask, Login, bool>
     {
     public:
         void run(const QString &id, const QString &pwd, bool save);
@@ -47,7 +47,7 @@ namespace DataEngine
         bool updateSaveStateAndLoginTime(const QString &id, bool save);
     };
 
-    class InsertOrUpdateClassTask : public AbstractTask<InsertOrUpdateClass, bool>
+    class InsertOrUpdateClassTask : public AbstractTask<InsertOrUpdateClassTask, InsertOrUpdateClass, bool>
     {
     public:
         void run(int gradeNum, int classNum, const QString &classType);
@@ -56,7 +56,7 @@ namespace DataEngine
         bool insertOrUpdateClass(int gradeNum, int classNum, const QString &classType);
     };
 
-    class FillAccountsListModelTask : public AbstractTask<FillAccountsListModel, bool>
+    class FillAccountsListModelTask : public AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>
     {
         Q_OBJECT
 
@@ -76,7 +76,7 @@ namespace DataEngine
         bool fillAccountsListModel(QStandardItemModel *model, int max);
     };
 
-    class FillNavigationTreeTask : public AbstractTask<FillNavigationTree, bool>
+    class FillNavigationTreeTask : public AbstractTask<FillNavigationTreeTask, FillNavigationTree, bool>
     {
         Q_OBJECT
 
@@ -96,7 +96,7 @@ namespace DataEngine
         bool fillNavigationTree(QTreeWidget *widget, const QString &rootName);
     };
 
-    class FillGradeListTask : public AbstractTask<FillGradeList, bool>
+    class FillGradeListTask : public AbstractTask<FillGradeListTask, FillGradeList, bool>
     {
         Q_OBJECT
 

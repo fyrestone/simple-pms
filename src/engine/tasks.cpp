@@ -338,7 +338,7 @@ bool InsertOrUpdateClassTask::insertOrUpdateClass(int gradeNum, int classNum, co
 }
 
 FillAccountsListModelTask::FillAccountsListModelTask(QObject *parent) :
-    AbstractTask<FillAccountsListModel, bool>(parent)
+    AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>(parent)
 {
     connect(this,       SIGNAL(sendData(QStandardItemModel*,QSqlRecord)),
             this,       SLOT(recvData(QStandardItemModel*,QSqlRecord)));
@@ -408,7 +408,7 @@ bool FillAccountsListModelTask::fillAccountsListModel(QStandardItemModel *model,
 }
 
 FillNavigationTreeTask::FillNavigationTreeTask(QObject *parent) :
-    AbstractTask<FillNavigationTree, bool>(parent)
+    AbstractTask<FillNavigationTreeTask, FillNavigationTree, bool>(parent)
 {
     connect(this,       SIGNAL(sendData(QTreeWidget*,QList<QSqlRecord>)),
             this,       SLOT(recvData(QTreeWidget*,QList<QSqlRecord>)));
@@ -481,7 +481,7 @@ bool FillNavigationTreeTask::fillNavigationTree(QTreeWidget *widget, const QStri
 }
 
 FillGradeListTask::FillGradeListTask(QObject *parent) :
-    AbstractTask<FillGradeList, bool>(parent)
+    AbstractTask<FillGradeListTask, FillGradeList, bool>(parent)
 {
     connect(this,       SIGNAL(sendData(QTreeWidget*,QVariant)),
             this,       SLOT(recvData(QTreeWidget*,QVariant)));
