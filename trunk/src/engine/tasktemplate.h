@@ -19,7 +19,7 @@ private slots:
     virtual void finishDispatcher() = 0;
 };
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 class AbstractTask : public AbstractBaseTask
 {
 public:
@@ -61,123 +61,123 @@ private:
     static QFutureSynchronizer<void> synchronizer;
 };
 
-template<int N, typename T>
-AbstractTask<N, T>::AbstractTask(QObject *parent)
+template<typename C, int N, typename T>
+AbstractTask<C, N, T>::AbstractTask(QObject *parent)
     :AbstractBaseTask(parent)
 {
     connect(&watcher, SIGNAL(finished()), this, SLOT(finishDispatcher()));
 }
 
-template<int N, typename T>
-AbstractTask<N, T>::~AbstractTask()
+template<typename C, int N, typename T>
+AbstractTask<C, N, T>::~AbstractTask()
 {
 
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class>
-inline void AbstractTask<N, T>::asyncRun(T (Class::*runFn)())
+inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)())
 {
     watcher.waitForFinished();
     watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1>
-inline void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1), const Arg1 &arg1)
+inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)(Param1), const Arg1 &arg1)
 {
     watcher.waitForFinished();
     watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
-inline void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2)
+inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2)
 {
     watcher.waitForFinished();
     watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
-inline void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
 {
     watcher.waitForFinished();
     watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
-inline void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
 {
     watcher.waitForFinished();
     watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
-inline void AbstractTask<N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+inline void AbstractTask<C, N, T>::asyncRun(T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
 {
     watcher.waitForFinished();
     watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4, arg5));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class>
-inline void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(), T (Class::*runFn)())
+inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(), T (Class::*runFn)())
 {
     watcher.waitForFinished();
     if((static_cast<Class*>(this)->*initFn)())
         watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1>
-inline void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1), T (Class::*runFn)(Param1), const Arg1 &arg1)
+inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1), T (Class::*runFn)(Param1), const Arg1 &arg1)
 {
     watcher.waitForFinished();
     if((static_cast<Class*>(this)->*initFn)(arg1))
         watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2>
-inline void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2), T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2)
+inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2), T (Class::*runFn)(Param1, Param2), const Arg1 &arg1, const Arg2 &arg2)
 {
     watcher.waitForFinished();
     if((static_cast<Class*>(this)->*initFn)(arg1, arg2))
         watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3>
-inline void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3), T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3), T (Class::*runFn)(Param1, Param2, Param3), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
 {
     watcher.waitForFinished();
     if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3))
         watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4>
-inline void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4), T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4), T (Class::*runFn)(Param1, Param2, Param3, Param4), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
 {
     watcher.waitForFinished();
     if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3, arg4))
         watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4));
 }
 
-template<int N, typename T>
+template<typename C, int N, typename T>
 template<typename Class, typename Param1, typename Arg1, typename Param2, typename Arg2, typename Param3, typename Arg3, typename Param4, typename Arg4, typename Param5, typename Arg5>
-inline void AbstractTask<N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4, Param5), T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+inline void AbstractTask<C, N, T>::asyncRun(bool (Class::*initFn)(Param1, Param2, Param3, Param4, Param5), T (Class::*runFn)(Param1, Param2, Param3, Param4, Param5), const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
 {
     watcher.waitForFinished();
     if((static_cast<Class*>(this)->*initFn)(arg1, arg2, arg3, arg4, arg5))
         watcher.setFuture(QtConcurrent::run(static_cast<Class*>(this), runFn, arg1, arg2, arg3, arg4, arg5));
 }
 
-template<int N, typename T>
-void AbstractTask<N, T>::finishDispatcher()
+template<typename C, int N, typename T>
+void AbstractTask<C, N, T>::finishDispatcher()
 {
     emit finished(N, QVariant(watcher.result()));
 }
