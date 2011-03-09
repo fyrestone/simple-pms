@@ -7,16 +7,25 @@ namespace Ui {
     class InputClassInfoWizardPage;
 }
 
+class InputClassInfoWizardPagePrivate;
+
 class InputClassInfoWizardPage : public QWizardPage
 {
     Q_OBJECT
+
+    friend class InputClassInfoWizardPagePrivate;
 
 public:
     explicit InputClassInfoWizardPage(QWidget *parent = 0);
     ~InputClassInfoWizardPage();
 
+    void initializePage();
+    bool isComplete() const;
+
 private:
-    Ui::InputClassInfoWizardPage *ui;
+    Q_DISABLE_COPY(InputClassInfoWizardPage)
+    Ui::InputClassInfoWizardPage * const ui;
+    InputClassInfoWizardPagePrivate * const d;
 };
 
 #endif // INPUTCLASSINFOWIZARDPAGE_H

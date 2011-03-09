@@ -23,7 +23,8 @@ namespace DataEngine
         InsertOrUpdateClass,                ///< 插入或更新班级
         FillAccountsListModel,              ///< 填充账号列表模型
         FillNavigationTree,                 ///< 填充班级树模型
-        FillGradeList                       ///< 填充年级列表
+        FillGradeList,                      ///< 填充年级列表
+        FillClassList                       ///< 填充班级列表
     };
 
     class InitializeDBTask : public AbstractTask<InitializeDBTask, InitializeDB, bool>
@@ -102,6 +103,24 @@ namespace DataEngine
         FillGradeListTask(QObject *parent = 0);
 
         bool run(QPointer<QTreeWidget> widget, const QString &headName);
+
+    signals:
+        void querySuccess(QPointer<QTreeWidget> widget, const QString &headName);
+        void sendData(QPointer<QTreeWidget> widget, const QVariant &data);
+
+    private slots:
+        void initWidget(QPointer<QTreeWidget> widget, const QString &headName);
+        void recvData(QPointer<QTreeWidget> widget, const QVariant &data);
+    };
+
+    class FillClassListTask : public AbstractTask<FillClassListTask, FillClassList, bool>
+    {
+        Q_OBJECT
+
+    public:
+        FillClassListTask(QObject *parent = 0);
+
+        bool run(QPointer<QTreeWidget> widget, const QString &headName, int gradeNum);
 
     signals:
         void querySuccess(QPointer<QTreeWidget> widget, const QString &headName);

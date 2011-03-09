@@ -49,7 +49,8 @@ HEADERS  += pch.h \
     gui/inputgradeinfowizardpage.h \
     gui/inputgradeinfowizardpage_p.h \
     engine/tasks.h \
-    engine/tasktemplate.h
+    engine/tasktemplate.h \
+    gui/inputclassinfowizardpage_p.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \

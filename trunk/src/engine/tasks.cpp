@@ -522,7 +522,7 @@ FillGradeListTask::FillGradeListTask(QObject *parent) :
 bool FillGradeListTask::run(QPointer<QTreeWidget> widget, const QString &headName)
 {
     static const QString gradeQuery = tr(
-            "SELECT DISTINCT grade from GradeClass order by grade DESC"
+            "SELECT DISTINCT grade from GradeClass order by grade ASC"
             );
 
     bool success = false;
@@ -568,4 +568,73 @@ void FillGradeListTask::recvData(QPointer<QTreeWidget> widget, const QVariant &d
     gradeItem->setTextAlignment(0, Qt::AlignCenter);
 
     widget->addTopLevelItem(gradeItem);
+}
+
+FillClassListTask::FillClassListTask(QObject *parent) :
+    AbstractTask<FillClassListTask, FillClassList, bool>(parent)
+{
+    setRunEntry(&FillClassListTask::run);
+
+    connect(this,       SIGNAL(querySuccess(QPointer<QTreeWidget>,QString)),
+            this,       SLOT(initWidget(QPointer<QTreeWidget>,QString)));
+    connect(this,       SIGNAL(sendData(QPointer<QTreeWidget>,QVariant)),
+            this,       SLOT(recvData(QPointer<QTreeWidget>,QVariant)));
+}
+
+bool FillClassListTask::run(QPointer<QTreeWidget> widget, const QString &headName, int gradeNum)
+{
+    static const QString classQuery = tr(
+            "SELECT DISTINCT class from GradeClass WHERE grade = :gradeNum order by class ASC"
+            );
+
+    bool success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(classQuery))
+    {
+        sql.bindValue(":gradeNum", gradeNum);
+
+        if(sql.exec())
+        {
+            emit querySuccess(widget, headName);
+
+            while(sql.next()) emit sendData(widget, sql.value(0));
+
+            success = true;
+        }
+    }
+
+    qDebug() << sql.lastError().text();
+
+    PRINT_RUN_THREAD();
+
+    return success;
+}
+
+void FillClassListTask::initWidget(QPointer<QTreeWidget> widget, const QString &headName)
+{
+    RETURN_IF_FAIL(widget);
+
+    widget->clear();
+
+    QTreeWidgetItem *header = widget->headerItem();
+
+    if(header)
+    {
+        header->setText(0, headName);
+        header->setTextAlignment(0, Qt::AlignCenter);
+    }
+}
+
+void FillClassListTask::recvData(QPointer<QTreeWidget> widget, const QVariant &data)
+{
+    RETURN_IF_FAIL(widget);
+
+    QTreeWidgetItem *classItem = new QTreeWidgetItem(widget);
+
+    classItem->setData(0, Qt::DisplayRole, data);
+    classItem->setTextAlignment(0, Qt::AlignCenter);
+
+    widget->addTopLevelItem(classItem);
 }
