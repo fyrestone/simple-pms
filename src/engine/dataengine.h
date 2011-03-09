@@ -13,9 +13,10 @@ namespace DataEngine
         Task();
         static Task *instance();
 
-        void waitForFinished(int task);
+        void waitForFinished(Tasks task);
 
     signals:
+        /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
         void finished(int task, const QVariant &result);
 
     public slots:
@@ -29,15 +30,13 @@ namespace DataEngine
     private:
         void registerTask(Tasks taskID, AbstractBaseTask *taskPtr);
 
+        template<typename TaskType>
+        inline TaskType *lookupTask(Tasks taskID) const
+        { return static_cast<TaskType *>(taskSet.value(taskID, NULL)); }
+
     private:
         Q_DISABLE_COPY(Task)
         QHash<Tasks, AbstractBaseTask *> taskSet;
-        InitializeDBTask                    initializeDBTask;
-        LoginTask                           loginTask;
-        InsertOrUpdateClassTask             insertOrUpdateClassTask;
-        FillAccountsListModelTask           fillAccountsListModelTask;
-        FillNavigationTreeTask              fillNavigationTreeTask;
-        FillGradeListTask                   fillGradeListTask;
     };
 }
 
