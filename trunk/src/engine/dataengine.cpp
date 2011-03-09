@@ -62,3 +62,11 @@ void Task::fillGradeList(QPointer<QTreeWidget> widget, const QString &headName)
 {
     fillGradeListTask.asyncRun(widget, headName);
 }
+
+void Task::registerTask(Tasks taskID, AbstractBaseTask *taskPtr)
+{
+    connect(taskPtr,            SIGNAL(finished(int,QVariant)),
+            this,               SIGNAL(finished(int,QVariant)));
+
+    taskSet.insert(taskID, taskPtr);
+}
