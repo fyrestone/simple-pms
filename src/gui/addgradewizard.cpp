@@ -13,6 +13,7 @@ AddGradeWizard::AddGradeWizard(QWidget *parent) :
     setButtonText(QWizard::CancelButton, tr("取消"));
 
     addPage(new InputGradeInfoWizardPage);
+    qDebug() << "AddGradeWizard:" << this->size();
 }
 
 AddGradeWizard::~AddGradeWizard()

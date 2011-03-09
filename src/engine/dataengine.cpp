@@ -13,6 +13,7 @@ Task::Task()
     registerTask(FillAccountsListModel, new FillAccountsListModelTask(this));
     registerTask(FillNavigationTree,    new FillNavigationTreeTask(this));
     registerTask(FillGradeList,         new FillGradeListTask(this));
+    registerTask(FillClassList,         new FillClassListTask(this));
 }
 
 Task *Task::instance()
@@ -67,6 +68,13 @@ void Task::fillGradeList(QPointer<QTreeWidget> widget, const QString &headName)
     FillGradeListTask *thisTask = lookupTask<FillGradeListTask>(FillGradeList);
 
     if(thisTask) thisTask->asyncRun(widget, headName);
+}
+
+void Task::fillClassList(QPointer<QTreeWidget> widget, const QString &headName, int gradeNum)
+{
+    FillClassListTask *thisTask = lookupTask<FillClassListTask>(FillClassList);
+
+    if(thisTask) thisTask->asyncRun(widget, headName, gradeNum);
 }
 
 void Task::registerTask(Tasks taskID, AbstractBaseTask *taskPtr)

@@ -26,6 +26,7 @@ namespace DataEngine
         void fillAccountsListModel(QPointer<QStandardItemModel> model, int max = 10);
         void fillNavigationTree(QPointer<QTreeWidget> widget, const QString &rootName);
         void fillGradeList(QPointer<QTreeWidget> widget, const QString &headName);
+        void fillClassList(QPointer<QTreeWidget> widget, const QString &headName, int gradeNum);
 
     private:
         void registerTask(Tasks taskID, AbstractBaseTask *taskPtr);
