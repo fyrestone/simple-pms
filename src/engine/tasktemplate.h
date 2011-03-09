@@ -37,6 +37,8 @@ public:
     AbstractBaseTask(QObject *parent = 0) : QObject(parent) {}
     ~AbstractBaseTask() {}
 
+    virtual void waitForFinished() = 0;
+
 signals:
     /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
     void finished(int task, const QVariant &result);
@@ -88,6 +90,8 @@ protected:
     void setRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4));
     template<typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
     void setRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5));
+
+    void waitForFinished();
 
 private:
     void finishDispatcher();
@@ -198,7 +202,6 @@ inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME()
 {
     typedef const MemberFuncWrapper<T (C::*)()> *WrapperType;
 
-    watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
     if(fnWrapper)
         emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))());
@@ -212,7 +215,6 @@ inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1)
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1)> *WrapperType;
 
-    watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
     if(fnWrapper)
         emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1));
@@ -226,7 +228,6 @@ inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2)> *WrapperType;
 
-    watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
     if(fnWrapper)
         emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2));
@@ -240,7 +241,6 @@ inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3)> *WrapperType;
 
-    watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
     if(fnWrapper)
         emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2, arg3));
@@ -254,7 +254,6 @@ inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3, Arg4)> *WrapperType;
 
-    watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
     if(fnWrapper)
         emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2, arg3, arg4));
@@ -268,7 +267,6 @@ inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const
 {
     typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3, Arg4, Arg5)> *WrapperType;
 
-    watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
     if(fnWrapper)
         emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2, arg3, arg4, arg5));
@@ -328,6 +326,12 @@ inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)(Param1, Param2, Par
     if(wrapper) delete wrapper;
 
     wrapper = new MemberFuncWrapper<T (C::*)(Param1, Param2, Param3, Param4, Param5)>(runFn);
+}
+
+template<typename C, int N, typename T>
+void AbstractTask<C, N, T>::waitForFinished()
+{
+    watcher.waitForFinished();
 }
 
 template<typename C, int N, typename T>

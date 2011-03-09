@@ -27,7 +27,11 @@ namespace DataEngine
         void fillGradeList(QPointer<QTreeWidget> widget, const QString &headName);
 
     private:
+        void registerTask(Tasks taskID, AbstractBaseTask *taskPtr);
+
+    private:
         Q_DISABLE_COPY(Task)
+        QHash<Tasks, AbstractBaseTask *> taskSet;
         InitializeDBTask                    initializeDBTask;
         LoginTask                           loginTask;
         InsertOrUpdateClassTask             insertOrUpdateClassTask;
