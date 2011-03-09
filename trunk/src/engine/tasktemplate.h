@@ -1,10 +1,15 @@
 #ifndef TASKTEMPLATE_H
 #define TASKTEMPLATE_H
 
+#include <QDebug>   /* 使用qWarning */
+
 namespace DataEngine
 {
 
-#define ENGINE_ASYNC_FUNC_NAME asyncRun
+#define ENGINE_ASYNC_FUNC_NAME  asyncRun
+#define ENGINE_SYNC_FUNC_NAME   syncRun
+#define NAME_TO_STR(name) _NAME_TO_STR(name)
+#define _NAME_TO_STR(name) #name
 
 class WrapperBase
 {
@@ -59,18 +64,30 @@ public:
     template<typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
     void ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
 
+    void ENGINE_SYNC_FUNC_NAME();
+    template<typename Arg1>
+    void ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1);
+    template<typename Arg1, typename Arg2>
+    void ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2);
+    template<typename Arg1, typename Arg2, typename Arg3>
+    void ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3);
+    template<typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+    void ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4);
+    template<typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+    void ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5);
+
 protected:
-    void setAsyncRunEntry(T (C::*runFn)());
+    void setRunEntry(T (C::*runFn)());
     template<typename Param1>
-    void setAsyncRunEntry(T (C::*runFn)(Param1));
+    void setRunEntry(T (C::*runFn)(Param1));
     template<typename Param1, typename Param2>
-    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2));
+    void setRunEntry(T (C::*runFn)(Param1, Param2));
     template<typename Param1, typename Param2, typename Param3>
-    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3));
+    void setRunEntry(T (C::*runFn)(Param1, Param2, Param3));
     template<typename Param1, typename Param2, typename Param3, typename Param4>
-    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4));
+    void setRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4));
     template<typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
-    void setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5));
+    void setRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5));
 
 private:
     void finishDispatcher();
@@ -100,7 +117,10 @@ inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME()
 
     watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
-    if(fnWrapper) watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr()));
+    if(fnWrapper)
+        watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr()));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_ASYNC_FUNC_NAME));
 }
 
 template<typename C, int N, typename T>
@@ -111,7 +131,10 @@ inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1)
 
     watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
-    if(fnWrapper) watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1));
+    if(fnWrapper)
+        watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_ASYNC_FUNC_NAME));
 }
 
 template<typename C, int N, typename T>
@@ -122,7 +145,10 @@ inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, cons
 
     watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
-    if(fnWrapper) watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2));
+    if(fnWrapper)
+        watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_ASYNC_FUNC_NAME));
 }
 
 template<typename C, int N, typename T>
@@ -133,7 +159,10 @@ inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, cons
 
     watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
-    if(fnWrapper) watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2, arg3));
+    if(fnWrapper)
+        watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2, arg3));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_ASYNC_FUNC_NAME));
 }
 
 template<typename C, int N, typename T>
@@ -144,7 +173,10 @@ inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, cons
 
     watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
-    if(fnWrapper) watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2, arg3, arg4));
+    if(fnWrapper)
+        watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2, arg3, arg4));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_ASYNC_FUNC_NAME));
 }
 
 template<typename C, int N, typename T>
@@ -155,11 +187,97 @@ inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1, cons
 
     watcher.waitForFinished();
     WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
-    if(fnWrapper) watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2, arg3, arg4, arg5));
+    if(fnWrapper)
+        watcher.setFuture(QtConcurrent::run(static_cast<C*>(this), fnWrapper->funcPtr(), arg1, arg2, arg3, arg4, arg5));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_ASYNC_FUNC_NAME));
 }
 
 template<typename C, int N, typename T>
-void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)())
+inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME()
+{
+    typedef const MemberFuncWrapper<T (C::*)()> *WrapperType;
+
+    watcher.waitForFinished();
+    WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
+    if(fnWrapper)
+        emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))());
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_SYNC_FUNC_NAME));
+}
+
+template<typename C, int N, typename T>
+template<typename Arg1>
+inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1)
+{
+    typedef const MemberFuncWrapper<T (C::*)(Arg1)> *WrapperType;
+
+    watcher.waitForFinished();
+    WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
+    if(fnWrapper)
+        emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_SYNC_FUNC_NAME));
+}
+
+template<typename C, int N, typename T>
+template<typename Arg1, typename Arg2>
+inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2)
+{
+    typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2)> *WrapperType;
+
+    watcher.waitForFinished();
+    WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
+    if(fnWrapper)
+        emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_SYNC_FUNC_NAME));
+}
+
+template<typename C, int N, typename T>
+template<typename Arg1, typename Arg2, typename Arg3>
+inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3)
+{
+    typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3)> *WrapperType;
+
+    watcher.waitForFinished();
+    WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
+    if(fnWrapper)
+        emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2, arg3));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_SYNC_FUNC_NAME));
+}
+
+template<typename C, int N, typename T>
+template<typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4)
+{
+    typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3, Arg4)> *WrapperType;
+
+    watcher.waitForFinished();
+    WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
+    if(fnWrapper)
+        emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2, arg3, arg4));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_SYNC_FUNC_NAME));
+}
+
+template<typename C, int N, typename T>
+template<typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+inline void AbstractTask<C, N, T>::ENGINE_SYNC_FUNC_NAME(const Arg1 &arg1, const Arg2 &arg2, const Arg3 &arg3, const Arg4 &arg4, const Arg5 &arg5)
+{
+    typedef const MemberFuncWrapper<T (C::*)(Arg1, Arg2, Arg3, Arg4, Arg5)> *WrapperType;
+
+    watcher.waitForFinished();
+    WrapperType fnWrapper = static_cast<WrapperType>(wrapper);
+    if(fnWrapper)
+        emit finished(N, (static_cast<C*>(this)->*(fnWrapper->funcPtr()))(arg1, arg2, arg3, arg4, arg5));
+    else
+        qWarning("please setRunEntry before call %s", NAME_TO_STR(ENGINE_SYNC_FUNC_NAME));
+}
+
+template<typename C, int N, typename T>
+inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)())
 {
     if(wrapper) delete wrapper;
 
@@ -168,7 +286,7 @@ void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)())
 
 template<typename C, int N, typename T>
 template<typename Param1>
-void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1))
+inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)(Param1))
 {
     if(wrapper) delete wrapper;
 
@@ -177,7 +295,7 @@ void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1))
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2>
-void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2))
+inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)(Param1, Param2))
 {
     if(wrapper) delete wrapper;
 
@@ -186,7 +304,7 @@ void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2))
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2, typename Param3>
-void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3))
+inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)(Param1, Param2, Param3))
 {
     if(wrapper) delete wrapper;
 
@@ -195,7 +313,7 @@ void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2, typename Param3, typename Param4>
-void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4))
+inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4))
 {
     if(wrapper) delete wrapper;
 
@@ -205,7 +323,7 @@ void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param
 
 template<typename C, int N, typename T>
 template<typename Param1, typename Param2, typename Param3, typename Param4, typename Param5>
-void AbstractTask<C, N, T>::setAsyncRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5))
+inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)(Param1, Param2, Param3, Param4, Param5))
 {
     if(wrapper) delete wrapper;
 
