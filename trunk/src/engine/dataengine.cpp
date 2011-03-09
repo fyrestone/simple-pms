@@ -7,18 +7,12 @@ Q_GLOBAL_STATIC(Task, task)
 
 Task::Task()
 {
-    connect(&initializeDBTask,                  SIGNAL(finished(int,QVariant)),
-            this,                               SIGNAL(finished(int,QVariant)));
-    connect(&loginTask,                         SIGNAL(finished(int,QVariant)),
-            this,                               SIGNAL(finished(int,QVariant)));
-    connect(&insertOrUpdateClassTask,           SIGNAL(finished(int,QVariant)),
-            this,                               SIGNAL(finished(int,QVariant)));
-    connect(&fillAccountsListModelTask,         SIGNAL(finished(int,QVariant)),
-            this,                               SIGNAL(finished(int,QVariant)));
-    connect(&fillNavigationTreeTask,            SIGNAL(finished(int,QVariant)),
-            this,                               SIGNAL(finished(int,QVariant)));
-    connect(&fillGradeListTask,                 SIGNAL(finished(int,QVariant)),
-            this,                               SIGNAL(finished(int,QVariant)));
+    registerTask(InitializeDB,          new InitializeDBTask(this));
+    registerTask(Login,                 new LoginTask(this));
+    registerTask(InsertOrUpdateClass,   new InsertOrUpdateClassTask(this));
+    registerTask(FillAccountsListModel, new FillAccountsListModelTask(this));
+    registerTask(FillNavigationTree,    new FillNavigationTreeTask(this));
+    registerTask(FillGradeList,         new FillGradeListTask(this));
 }
 
 Task *Task::instance()
@@ -26,41 +20,53 @@ Task *Task::instance()
     return task();
 }
 
-void Task::waitForFinished(int task)
+void Task::waitForFinished(Tasks task)
 {
+    AbstractBaseTask *thisTask = taskSet.value(task);
 
+    if(thisTask) thisTask->waitForFinished();
 }
 
 void Task::initializeDB(const QString &dbPath)
 {
-    //initializeDBTask.asyncRun(dbPath);
-    initializeDBTask.syncRun(dbPath);
+    InitializeDBTask *thisTask = lookupTask<InitializeDBTask>(InitializeDB);
+
+    if(thisTask) thisTask->syncRun(dbPath);
 }
 
 void Task::login(const QString &id, const QString &pwd, bool save)
 {
-    loginTask.asyncRun(id, pwd, save);
+    LoginTask *thisTask = lookupTask<LoginTask>(Login);
+
+    if(thisTask) thisTask->asyncRun(id, pwd, save);
 }
 
 void Task::insertOrUpdateClass(int gradeNum, int classNum, const QString &classType)
 {
-    insertOrUpdateClassTask.asyncRun(gradeNum, classNum, classType);
+    InsertOrUpdateClassTask *thisTask = lookupTask<InsertOrUpdateClassTask>(InsertOrUpdateClass);
+
+    if(thisTask) thisTask->asyncRun(gradeNum, classNum, classType);
 }
 
 void Task::fillAccountsListModel(QPointer<QStandardItemModel> model, int max)
 {
-    fillAccountsListModelTask.syncRun(model, max);
-    //fillAccountsListModelTask.asyncRun(model, max);
+    FillAccountsListModelTask *thisTask = lookupTask<FillAccountsListModelTask>(FillAccountsListModel);
+
+    if(thisTask) thisTask->syncRun(model, max);
 }
 
 void Task::fillNavigationTree(QPointer<QTreeWidget> widget, const QString &rootName)
 {
-    fillNavigationTreeTask.asyncRun(widget, rootName);
+    FillNavigationTreeTask *thisTask = lookupTask<FillNavigationTreeTask>(FillNavigationTree);
+
+    if(thisTask) thisTask->asyncRun(widget, rootName);
 }
 
 void Task::fillGradeList(QPointer<QTreeWidget> widget, const QString &headName)
 {
-    fillGradeListTask.asyncRun(widget, headName);
+    FillGradeListTask *thisTask = lookupTask<FillGradeListTask>(FillGradeList);
+
+    if(thisTask) thisTask->asyncRun(widget, headName);
 }
 
 void Task::registerTask(Tasks taskID, AbstractBaseTask *taskPtr)
