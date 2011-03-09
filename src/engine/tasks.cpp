@@ -8,17 +8,28 @@
 
 using namespace DataEngine;
 
-int i = qRegisterMetaType<QSqlRecord>("QSqlRecord");                    /* FillAccountsListModelTask */
-int j = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");    /* FillNavigationTreeTask */
+#define RETURN_IF_FAIL(target)                                                  \
+    if(!(target))                                                               \
+    {                                                                           \
+        qDebug("%s:%d Info: " #target " failed", __PRETTY_FUNCTION__, __LINE__);\
+        return;                                                                 \
+    }
+
+int i1 = qRegisterMetaType<QSqlRecord>("QSqlRecord");                    /* FillAccountsListModelTask */
+int i2 = qRegisterMetaType< QPointer<QStandardItemModel> >("QPointer<QStandardItemModel>");
+int i3 = qRegisterMetaType< QPointer<QTreeWidget> >("QPointer<QTreeWidget>");
+int i4 = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");    /* FillNavigationTreeTask */
 
 InitializeDBTask::InitializeDBTask(QObject *parent) :
     AbstractTask<InitializeDBTask, InitializeDB, bool>(parent)
 {
-    setAsyncRunEntry(&InitializeDBTask::run);
+    setRunEntry(&InitializeDBTask::run);
 }
 
 bool InitializeDBTask::run(const QString &dbPath)
 {
+    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+
     return createConnection(dbPath) && createTable() && fillInitialData();
 }
 
@@ -148,8 +159,6 @@ bool InitializeDBTask::createTable()
             success = db.commit();
         else
             (void)db.rollback();
-
-        qDebug() << QThread::currentThreadId() << "InitializeDBTask::createTable -> " << sql.lastError().text();
     }
 
     return success;
@@ -234,8 +243,6 @@ bool InitializeDBTask::fillInitialData()
             success = db.commit();
         else
             (void)db.rollback();
-
-        qDebug() << QThread::currentThreadId() << "InitializeDBTask::fillInitialData -> " << sql.lastError().text();
     }
 
     return success;
@@ -244,7 +251,7 @@ bool InitializeDBTask::fillInitialData()
 LoginTask::LoginTask(QObject *parent) :
     AbstractTask<LoginTask, Login, bool>(parent)
 {
-    setAsyncRunEntry(&LoginTask::run);
+    setRunEntry(&LoginTask::run);
 }
 
 bool LoginTask::run(const QString &id, const QString &pwd, bool save)
@@ -282,6 +289,8 @@ bool LoginTask::run(const QString &id, const QString &pwd, bool save)
         }
     }
 
+    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+
     return success;
 }
 
@@ -310,7 +319,7 @@ bool LoginTask::updateSaveStateAndLoginTime(const QString &id, bool save)
 InsertOrUpdateClassTask::InsertOrUpdateClassTask(QObject *parent) :
     AbstractTask<InsertOrUpdateClassTask, InsertOrUpdateClass, bool>(parent)
 {
-    setAsyncRunEntry(&InsertOrUpdateClassTask::run);
+    setRunEntry(&InsertOrUpdateClassTask::run);
 }
 
 bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &classType)
@@ -333,21 +342,23 @@ bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &cla
         success = sql.exec();
     }
 
+    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+
     return success;
 }
 
 FillAccountsListModelTask::FillAccountsListModelTask(QObject *parent) :
     AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>(parent)
 {
-    setAsyncRunEntry(&FillAccountsListModelTask::run);
+    setRunEntry(&FillAccountsListModelTask::run);
 
-    connect(this,       SIGNAL(querySuccess(QStandardItemModel*)),
-            this,       SLOT(initModel(QStandardItemModel*)));
-    connect(this,       SIGNAL(sendData(QStandardItemModel*,QSqlRecord)),
-            this,       SLOT(recvData(QStandardItemModel*,QSqlRecord)));
+    connect(this,       SIGNAL(querySuccess(QPointer<QStandardItemModel>)),
+            this,       SLOT(initModel(QPointer<QStandardItemModel>)));
+    connect(this,       SIGNAL(sendData(QPointer<QStandardItemModel>,QSqlRecord)),
+            this,       SLOT(recvData(QPointer<QStandardItemModel>,QSqlRecord)));
 }
 
-bool FillAccountsListModelTask::run(QStandardItemModel *model, int max)
+bool FillAccountsListModelTask::run(QPointer<QStandardItemModel> model, int max)
 {
     static const QString listAccounts = tr(
             "SELECT account_id, name,"
@@ -377,16 +388,22 @@ bool FillAccountsListModelTask::run(QStandardItemModel *model, int max)
         }
     }
 
+    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+
     return success;
 }
 
-void FillAccountsListModelTask::initModel(QStandardItemModel *model)
+void FillAccountsListModelTask::initModel(QPointer<QStandardItemModel> model)
 {
+    RETURN_IF_FAIL(model);
+
     model->clear();
 }
 
-void FillAccountsListModelTask::recvData(QStandardItemModel *model, const QSqlRecord &record)
+void FillAccountsListModelTask::recvData(QPointer<QStandardItemModel> model, const QSqlRecord &record)
 {
+    RETURN_IF_FAIL(model);
+
     QList<QStandardItem *> row;
 
     row.append(new QStandardItem(record.value(0).toString()));     //账号
@@ -407,15 +424,15 @@ void FillAccountsListModelTask::recvData(QStandardItemModel *model, const QSqlRe
 FillNavigationTreeTask::FillNavigationTreeTask(QObject *parent) :
     AbstractTask<FillNavigationTreeTask, FillNavigationTree, bool>(parent)
 {
-    setAsyncRunEntry(&FillNavigationTreeTask::run);
+    setRunEntry(&FillNavigationTreeTask::run);
 
-    connect(this,       SIGNAL(querySuccess(QTreeWidget*,QString)),
-            this,       SLOT(initWidget(QTreeWidget*,QString)));
-    connect(this,       SIGNAL(sendData(QTreeWidget*,QList<QSqlRecord>)),
-            this,       SLOT(recvData(QTreeWidget*,QList<QSqlRecord>)));
+    connect(this,       SIGNAL(querySuccess(QPointer<QTreeWidget>,QString)),
+            this,       SLOT(initWidget(QPointer<QTreeWidget>,QString)));
+    connect(this,       SIGNAL(sendData(QPointer<QTreeWidget>,QList<QSqlRecord>)),
+            this,       SLOT(recvData(QPointer<QTreeWidget>,QList<QSqlRecord>)));
 }
 
-bool FillNavigationTreeTask::run(QTreeWidget *widget, const QString &rootName)
+bool FillNavigationTreeTask::run(QPointer<QTreeWidget> widget, const QString &rootName)
 {
     static const QString gradeClassQuery = tr(
             "SELECT grade, class from GradeClass order by grade DESC, class ASC"
@@ -436,24 +453,31 @@ bool FillNavigationTreeTask::run(QTreeWidget *widget, const QString &rootName)
         success = true;
     }
 
+    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+
     return success;
 }
 
-void FillNavigationTreeTask::initWidget(QTreeWidget *widget, const QString &rootName)
+void FillNavigationTreeTask::initWidget(QPointer<QTreeWidget> widget, const QString &rootName)
 {
+    RETURN_IF_FAIL(widget);
+
     widget->clear();
 
     NavigationItem *root  = new NavigationItem(NavigationItem::Root);   //根结点
     root->setText(0, rootName);
+
     widget->addTopLevelItem(root);
 }
 
-void FillNavigationTreeTask::recvData(QTreeWidget *widget, const QList<QSqlRecord> &data)
+void FillNavigationTreeTask::recvData(QPointer<QTreeWidget> widget, const QList<QSqlRecord> &data)
 {
+    RETURN_IF_FAIL(widget);
+
     NavigationItem *lastGradeItem = NULL;
     int lastGradeNum = -1;
 
-    for(i = 0; i < data.count(); ++i)
+    for(int i = 0; i < data.count(); ++i)
     {
         int currGradeNum = data.at(i).value(0).toInt();
         int currClassNum = data.at(i).value(1).toInt();
@@ -476,15 +500,15 @@ void FillNavigationTreeTask::recvData(QTreeWidget *widget, const QList<QSqlRecor
 FillGradeListTask::FillGradeListTask(QObject *parent) :
     AbstractTask<FillGradeListTask, FillGradeList, bool>(parent)
 {
-    setAsyncRunEntry(&FillGradeListTask::run);
+    setRunEntry(&FillGradeListTask::run);
 
-    connect(this,       SIGNAL(querySuccess(QTreeWidget*,QString)),
-            this,       SLOT(initWidget(QTreeWidget*,QString)));
-    connect(this,       SIGNAL(sendData(QTreeWidget*,QVariant)),
-            this,       SLOT(recvData(QTreeWidget*,QVariant)));
+    connect(this,       SIGNAL(querySuccess(QPointer<QTreeWidget>,QString)),
+            this,       SLOT(initWidget(QPointer<QTreeWidget>,QString)));
+    connect(this,       SIGNAL(sendData(QPointer<QTreeWidget>,QVariant)),
+            this,       SLOT(recvData(QPointer<QTreeWidget>,QVariant)));
 }
 
-bool FillGradeListTask::run(QTreeWidget *widget, const QString &headName)
+bool FillGradeListTask::run(QPointer<QTreeWidget> widget, const QString &headName)
 {
     static const QString gradeQuery = tr(
             "SELECT DISTINCT grade from GradeClass order by grade DESC"
@@ -503,11 +527,15 @@ bool FillGradeListTask::run(QTreeWidget *widget, const QString &headName)
         success = true;
     }
 
+    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+
     return success;
 }
 
-void FillGradeListTask::initWidget(QTreeWidget *widget, const QString &headName)
+void FillGradeListTask::initWidget(QPointer<QTreeWidget> widget, const QString &headName)
 {
+    RETURN_IF_FAIL(widget);
+
     widget->clear();
 
     QTreeWidgetItem *header = widget->headerItem();
@@ -519,8 +547,10 @@ void FillGradeListTask::initWidget(QTreeWidget *widget, const QString &headName)
     }
 }
 
-void FillGradeListTask::recvData(QTreeWidget *widget, const QVariant &data)
+void FillGradeListTask::recvData(QPointer<QTreeWidget> widget, const QVariant &data)
 {
+    RETURN_IF_FAIL(widget);
+
     QTreeWidgetItem *gradeItem = new QTreeWidgetItem(widget);
 
     gradeItem->setData(0, Qt::DisplayRole, data);

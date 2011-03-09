@@ -25,3 +25,40 @@ Task *Task::instance()
 {
     return task();
 }
+
+void Task::waitForFinished(int task)
+{
+
+}
+
+void Task::initializeDB(const QString &dbPath)
+{
+    //initializeDBTask.asyncRun(dbPath);
+    initializeDBTask.syncRun(dbPath);
+}
+
+void Task::login(const QString &id, const QString &pwd, bool save)
+{
+    loginTask.asyncRun(id, pwd, save);
+}
+
+void Task::insertOrUpdateClass(int gradeNum, int classNum, const QString &classType)
+{
+    insertOrUpdateClassTask.asyncRun(gradeNum, classNum, classType);
+}
+
+void Task::fillAccountsListModel(QPointer<QStandardItemModel> model, int max)
+{
+    fillAccountsListModelTask.syncRun(model, max);
+    //fillAccountsListModelTask.asyncRun(model, max);
+}
+
+void Task::fillNavigationTree(QPointer<QTreeWidget> widget, const QString &rootName)
+{
+    fillNavigationTreeTask.asyncRun(widget, rootName);
+}
+
+void Task::fillGradeList(QPointer<QTreeWidget> widget, const QString &headName)
+{
+    fillGradeListTask.asyncRun(widget, headName);
+}

@@ -22,9 +22,9 @@ namespace DataEngine
         void initializeDB(const QString &dbPath);
         void login(const QString &id, const QString &pwd, bool save);
         void insertOrUpdateClass(int gradeNum, int classNum, const QString &classType);
-        void fillAccountsListModel(QStandardItemModel *model, int max = 10);
-        void fillNavigationTree(QTreeWidget *widget, const QString &rootName);
-        void fillGradeList(QTreeWidget *widget, const QString &headName);
+        void fillAccountsListModel(QPointer<QStandardItemModel> model, int max = 10);
+        void fillNavigationTree(QPointer<QTreeWidget> widget, const QString &rootName);
+        void fillGradeList(QPointer<QTreeWidget> widget, const QString &headName);
 
     private:
         Q_DISABLE_COPY(Task)
@@ -35,41 +35,6 @@ namespace DataEngine
         FillNavigationTreeTask              fillNavigationTreeTask;
         FillGradeListTask                   fillGradeListTask;
     };
-
-    inline void Task::waitForFinished(int task)
-    {
-
-    }
-
-    inline void Task::initializeDB(const QString &dbPath)
-    {
-        initializeDBTask.asyncRun(dbPath);
-    }
-
-    inline void Task::login(const QString &id, const QString &pwd, bool save)
-    {
-        loginTask.asyncRun(id, pwd, save);
-    }
-
-    inline void Task::insertOrUpdateClass(int gradeNum, int classNum, const QString &classType)
-    {
-        insertOrUpdateClassTask.asyncRun(gradeNum, classNum, classType);
-    }
-
-    inline void Task::fillAccountsListModel(QStandardItemModel *model, int max)
-    {
-        fillAccountsListModelTask.asyncRun(model, max);
-    }
-
-    inline void Task::fillNavigationTree(QTreeWidget *widget, const QString &rootName)
-    {
-        fillNavigationTreeTask.asyncRun(widget, rootName);
-    }
-
-    inline void Task::fillGradeList(QTreeWidget *widget, const QString &headName)
-    {
-        fillGradeListTask.asyncRun(widget, headName);
-    }
 }
 
 #endif // DATAENGINE_H

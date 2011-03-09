@@ -3,6 +3,7 @@
 
 #include "tasktemplate.h"
 #include <QObject>
+#include <QPointer>
 #include <QList>
 #include <QSqlRecord>
 #include <QVariant>
@@ -64,15 +65,15 @@ namespace DataEngine
     public:
         FillAccountsListModelTask(QObject *parent = 0);
 
-        bool run(QStandardItemModel *model, int max);
+        bool run(QPointer<QStandardItemModel> model, int max);
 
     signals:
-        void querySuccess(QStandardItemModel *model);
-        void sendData(QStandardItemModel *model, const QSqlRecord &record);
+        void querySuccess(QPointer<QStandardItemModel> model);
+        void sendData(QPointer<QStandardItemModel> model, const QSqlRecord &record);
 
     private slots:
-        void initModel(QStandardItemModel *model);
-        void recvData(QStandardItemModel *model, const QSqlRecord &record);
+        void initModel(QPointer<QStandardItemModel> model);
+        void recvData(QPointer<QStandardItemModel> model, const QSqlRecord &record);
     };
 
     class FillNavigationTreeTask : public AbstractTask<FillNavigationTreeTask, FillNavigationTree, bool>
@@ -82,15 +83,15 @@ namespace DataEngine
     public:
         FillNavigationTreeTask(QObject *parent = 0);
 
-        bool run(QTreeWidget *widget, const QString &rootName);
+        bool run(QPointer<QTreeWidget> widget, const QString &rootName);
 
     signals:
-        void querySuccess(QTreeWidget *widget, const QString &rootName);
-        void sendData(QTreeWidget *widget, const QList<QSqlRecord> &data);  
+        void querySuccess(QPointer<QTreeWidget> widget, const QString &rootName);
+        void sendData(QPointer<QTreeWidget> widget, const QList<QSqlRecord> &data);
 
     private slots:
-        void initWidget(QTreeWidget *widget, const QString &rootName);
-        void recvData(QTreeWidget *widget, const QList<QSqlRecord> &data);
+        void initWidget(QPointer<QTreeWidget> widget, const QString &rootName);
+        void recvData(QPointer<QTreeWidget> widget, const QList<QSqlRecord> &data);
     };
 
     class FillGradeListTask : public AbstractTask<FillGradeListTask, FillGradeList, bool>
@@ -100,15 +101,15 @@ namespace DataEngine
     public:
         FillGradeListTask(QObject *parent = 0);
 
-        bool run(QTreeWidget *widget, const QString &headName);
+        bool run(QPointer<QTreeWidget> widget, const QString &headName);
 
     signals:
-        void querySuccess(QTreeWidget *widget, const QString &headName);
-        void sendData(QTreeWidget *widget, const QVariant &data);
+        void querySuccess(QPointer<QTreeWidget> widget, const QString &headName);
+        void sendData(QPointer<QTreeWidget> widget, const QVariant &data);
 
     private slots:
-        void initWidget(QTreeWidget *widget, const QString &headName);
-        void recvData(QTreeWidget *widget, const QVariant &data);
+        void initWidget(QPointer<QTreeWidget> widget, const QString &headName);
+        void recvData(QPointer<QTreeWidget> widget, const QVariant &data);
     };
 }
 
