@@ -8,6 +8,10 @@
 
 using namespace DataEngine;
 
+/*!
+测试target，若为假，打印信息并退出
+\param target 测试的逻辑值
+*/
 #define RETURN_IF_FAIL(target)                                                  \
     if(!(target))                                                               \
     {                                                                           \
@@ -15,10 +19,17 @@ using namespace DataEngine;
         return;                                                                 \
     }
 
-int i1 = qRegisterMetaType<QSqlRecord>("QSqlRecord");                    /* FillAccountsListModelTask */
+/*!
+打印函数运行线程信息
+*/
+#define PRINT_RUN_THREAD()                                                      \
+    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId()
+
+/* 注册信号/槽参数类型 */
+int i1 = qRegisterMetaType<QSqlRecord>("QSqlRecord");
 int i2 = qRegisterMetaType< QPointer<QStandardItemModel> >("QPointer<QStandardItemModel>");
 int i3 = qRegisterMetaType< QPointer<QTreeWidget> >("QPointer<QTreeWidget>");
-int i4 = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");    /* FillNavigationTreeTask */
+int i4 = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");
 
 InitializeDBTask::InitializeDBTask(QObject *parent) :
     AbstractTask<InitializeDBTask, InitializeDB, bool>(parent)
@@ -28,7 +39,7 @@ InitializeDBTask::InitializeDBTask(QObject *parent) :
 
 bool InitializeDBTask::run(const QString &dbPath)
 {
-    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+    PRINT_RUN_THREAD();
 
     return createConnection(dbPath) && createTable() && fillInitialData();
 }
@@ -289,7 +300,7 @@ bool LoginTask::run(const QString &id, const QString &pwd, bool save)
         }
     }
 
-    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+    PRINT_RUN_THREAD();
 
     return success;
 }
@@ -342,7 +353,7 @@ bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &cla
         success = sql.exec();
     }
 
-    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+    PRINT_RUN_THREAD();
 
     return success;
 }
@@ -388,7 +399,7 @@ bool FillAccountsListModelTask::run(QPointer<QStandardItemModel> model, int max)
         }
     }
 
-    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+    PRINT_RUN_THREAD();
 
     return success;
 }
@@ -453,7 +464,7 @@ bool FillNavigationTreeTask::run(QPointer<QTreeWidget> widget, const QString &ro
         success = true;
     }
 
-    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+    PRINT_RUN_THREAD();
 
     return success;
 }
@@ -527,7 +538,7 @@ bool FillGradeListTask::run(QPointer<QTreeWidget> widget, const QString &headNam
         success = true;
     }
 
-    qDebug() << __PRETTY_FUNCTION__ << "run in Thread" << QThread::currentThreadId();
+    PRINT_RUN_THREAD();
 
     return success;
 }
