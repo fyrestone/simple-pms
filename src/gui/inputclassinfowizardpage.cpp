@@ -6,30 +6,76 @@
 
 InputClassInfoWizardPagePrivate::InputClassInfoWizardPagePrivate(InputClassInfoWizardPage *parent) :
     task(DataEngine::Task::instance()),
-    q(parent)
+    q(parent),
+    hasTaskRunning(true)
 {
 }
 
-void InputClassInfoWizardPagePrivate::initializeMember()
+inline void InputClassInfoWizardPagePrivate::initializeMember()
 {
     q->ui->classLineEdit->setValidator(new QIntValidator(this));
     q->registerField("classNum", q->ui->classLineEdit);
 }
 
-void InputClassInfoWizardPagePrivate::connectSignalsAndSlots()
+inline void InputClassInfoWizardPagePrivate::connectSignalsAndSlots()
 {
+    connect(task,                       SIGNAL(finished(int,QVariant)),
+            this,                       SLOT(finished(int,QVariant)));
     connect(q->ui->classLineEdit,       SIGNAL(textChanged(QString)),
             q,                          SIGNAL(completeChanged()));
 }
 
-void InputClassInfoWizardPagePrivate::completeConstruct()
+inline void InputClassInfoWizardPagePrivate::completeConstruct()
 {
-    task->fillClassList(q->ui->classTreeWidget, tr("已经存在的班级"), 2010);
+    hasTaskRunning = true;
+
+    task->lookup<DataEngine::FillClassListTask>()->run(q->ui->classTreeWidget, tr("已经存在的班级"), q->field("gradeNum").toInt());
+}
+
+inline bool InputClassInfoWizardPagePrivate::isComplete() const
+{
+    if(hasTaskRunning)
+        return false;
+    else
+    {
+        QString classNumStr = q->ui->classLineEdit->text();
+        QList<QTreeWidgetItem *> match = q->ui->classTreeWidget->findItems(classNumStr, Qt::MatchExactly);
+
+        return !classNumStr.isEmpty() && match.isEmpty();
+    }
+}
+
+inline bool InputClassInfoWizardPagePrivate::validatePage()
+{
+    bool success = false;
+
+    int gradeNum = q->field("gradeNum").toInt(&success);
+
+    if(success)
+    {
+        using namespace DataEngine;
+
+        task->lookup<InsertOrUpdateClassTask>();
+        //DataEngine::InsertOrUpdateClassTask *fucktask = task->lookup<DataEngine::InsertOrUpdateClassTask>(DataEngine::InsertOrUpdateClass);
+        //if(fucktask) fucktask->run(gradeNum, q->ui->classLineEdit->text().toInt(), tr("普通班"));
+        //task->insertOrUpdateClass(gradeNum, q->ui->classLineEdit->text().toInt(), tr("普通班"));
+        //success = task->waitForResult(DataEngine::InsertOrUpdateClass).toBool();
+    }
+
+    return success;
 }
 
 void InputClassInfoWizardPagePrivate::finished(int taskID, const QVariant &result)
 {
-
+    switch(taskID)
+    {
+    case DataEngine::FillClassList:
+        if(result.type() == QVariant::Bool && result.toBool())
+        {
+            hasTaskRunning = false;
+        }
+        break;
+    }
 }
 
 InputClassInfoWizardPage::InputClassInfoWizardPage(QWidget *parent) :
@@ -55,9 +101,11 @@ void InputClassInfoWizardPage::initializePage()
 
 bool InputClassInfoWizardPage::isComplete() const
 {
-    QString classNum = field("classNum").toString();
-    QList<QTreeWidgetItem *> match = ui->classTreeWidget->findItems(classNum, Qt::MatchExactly);
+    return d->isComplete();
+}
 
-    return !classNum.isEmpty() && match.isEmpty();
+bool InputClassInfoWizardPage::validatePage()
+{
+    return d->validatePage();
 }
 
