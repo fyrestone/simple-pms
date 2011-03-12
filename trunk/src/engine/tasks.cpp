@@ -331,6 +331,7 @@ InsertOrUpdateClassTask::InsertOrUpdateClassTask(QObject *parent) :
     AbstractTask<InsertOrUpdateClassTask, InsertOrUpdateClass, bool>(parent)
 {
     setRunEntry(&InsertOrUpdateClassTask::run);
+    //int j = InsertOrUpdateClassTask::type;
 }
 
 bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &classType)

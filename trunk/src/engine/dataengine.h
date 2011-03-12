@@ -5,40 +5,58 @@
 
 namespace DataEngine
 {
-    class Task : public QObject
+//class TaskBase : public QObject
+//{
+//    Q_OBJECT
+
+//public:
+//    TaskBase(QObject *parent = 0) : QObject(parent) {}
+//    ~TaskBase() {}
+
+//signals:
+//    /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
+//    void finished(int task, const QVariant &result);
+//};
+
+#define FUCK(x) x##Task
+
+class Task : public QObject
+{
+    Q_OBJECT
+
+public:
+    Task();
+    static Task *instance();
+
+    void waitForFinished(Tasks task);
+
+    template<typename TaskType>
+    inline TaskType *lookup() const
     {
-        Q_OBJECT
+        TaskType * ff = static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
+        return static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
+    }
 
-    public:
-        Task();
-        static Task *instance();
+signals:
+    /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
+    void finished(int task, const QVariant &result);
 
-        void waitForFinished(Tasks task);
+public slots:
+    void initializeDB(const QString &dbPath);
+    void login(const QString &id, const QString &pwd, bool save);
+    void insertOrUpdateClass(int gradeNum, int classNum, const QString &classType);
+    void fillAccountsListModel(QPointer<QStandardItemModel> model, int max = 10);
+    void fillNavigationTree(QPointer<QTreeWidget> widget, const QString &rootName);
+    void fillGradeList(QPointer<QTreeWidget> widget, const QString &headName);
+    void fillClassList(QPointer<QTreeWidget> widget, const QString &headName, int gradeNum);
 
-    signals:
-        /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
-        void finished(int task, const QVariant &result);
+private:
+    void registerTask(Tasks taskID, AbstractTaskBase *taskPtr);
 
-    public slots:
-        void initializeDB(const QString &dbPath);
-        void login(const QString &id, const QString &pwd, bool save);
-        void insertOrUpdateClass(int gradeNum, int classNum, const QString &classType);
-        void fillAccountsListModel(QPointer<QStandardItemModel> model, int max = 10);
-        void fillNavigationTree(QPointer<QTreeWidget> widget, const QString &rootName);
-        void fillGradeList(QPointer<QTreeWidget> widget, const QString &headName);
-        void fillClassList(QPointer<QTreeWidget> widget, const QString &headName, int gradeNum);
-
-    private:
-        void registerTask(Tasks taskID, AbstractBaseTask *taskPtr);
-
-        template<typename TaskType>
-        inline TaskType *lookupTask(Tasks taskID) const
-        { return static_cast<TaskType *>(taskSet.value(taskID, NULL)); }
-
-    private:
-        Q_DISABLE_COPY(Task)
-        QHash<Tasks, AbstractBaseTask *> taskSet;
-    };
+private:
+    Q_DISABLE_COPY(Task)
+    QHash<int, AbstractTaskBase *> taskSet;
+};
 }
 
 #endif // DATAENGINE_H

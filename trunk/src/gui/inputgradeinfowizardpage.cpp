@@ -24,7 +24,7 @@ void InputGradeInfoWizardPagePrivate::connectSignalsAndSlots()
 
 void InputGradeInfoWizardPagePrivate::completeConstruct()
 {
-    task->fillGradeList(q->ui->gradeTreeWidget, tr("已经存在的年级"));
+    task->lookup<DataEngine::FillGradeListTask>()->asyncRun(q->ui->gradeTreeWidget, tr("已经存在的年级"));
 }
 
 void InputGradeInfoWizardPagePrivate::finished(int taskID, const QVariant &result)
@@ -55,8 +55,8 @@ void InputGradeInfoWizardPage::initializePage()
 
 bool InputGradeInfoWizardPage::isComplete() const
 {
-    QString gradeNum = field("gradeNum").toString();
-    QList<QTreeWidgetItem *> match = ui->gradeTreeWidget->findItems(gradeNum, Qt::MatchExactly);
+    QString gradeNumStr = field("gradeNum").toString();
+    QList<QTreeWidgetItem *> match = ui->gradeTreeWidget->findItems(gradeNumStr, Qt::MatchExactly);
 
-    return !gradeNum.isEmpty() && match.isEmpty();
+    return !gradeNumStr.isEmpty() && match.isEmpty();
 }

@@ -57,7 +57,7 @@ void MainWinPrivate::connectSignalsAndSlots()
 
 void MainWinPrivate::completeConstruct()
 {
-    task->fillNavigationTree(q->ui->navigationTree, tr("驻马店第一初级中学"));
+    task->lookup<DataEngine::FillNavigationTreeTask>()->run(q->ui->navigationTree, tr("驻马店第一初级中学"));
 }
 
 void MainWinPrivate::finished(int taskID, const QVariant &result)
@@ -70,7 +70,7 @@ void MainWinPrivate::finished(int taskID, const QVariant &result)
         break;
     case DataEngine::InsertOrUpdateClass:
         if(result.type() == QVariant::Bool && result.toBool())
-            task->fillNavigationTree(q->ui->navigationTree, tr("驻马店第一初级中学"));
+            //task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(q->ui->navigationTree, tr("驻马店第一初级中学"));
         break;
     }
 }

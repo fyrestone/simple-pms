@@ -35,7 +35,7 @@ inline void LoginDlgPrivate::connectSignalsAndSlots()
 
 inline void LoginDlgPrivate::completeConstruct()
 {
-    task->initializeDB("data.db"); //初始化数据库
+    task->lookup<DataEngine::InitializeDBTask>()->asyncRun(tr("data.db")); //初始化数据库
 }
 
 inline void LoginDlgPrivate::initializeComboBoxView()
@@ -136,7 +136,7 @@ void LoginDlgPrivate::finished(int taskID, const QVariant &result)
     {
     case DataEngine::InitializeDB:
         if(result.type() == QVariant::Bool && result.toBool())
-            task->fillAccountsListModel(&model);        //填充账户列表模型
+            task->lookup<DataEngine::FillAccountsListModelTask>()->asyncRun(&model, 10);//填充账户列表模型
         break;
     case DataEngine::Login:
         if(result.type() == QVariant::Bool && result.toBool())
@@ -212,7 +212,7 @@ void LoginDlgPrivate::login()
     QString pwd = q->ui->passwordLineEdit->text();         //密码
     bool savePassword = q->ui->savePassword->isChecked();  //是否保存密码
 
-    task->login(id, pwd, savePassword);
+    task->lookup<DataEngine::LoginTask>()->asyncRun(id, pwd, savePassword);
 }
 
 LoginDlg::LoginDlg(QWidget *parent) :

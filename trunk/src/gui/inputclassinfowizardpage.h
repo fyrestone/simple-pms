@@ -21,6 +21,7 @@ public:
 
     void initializePage();
     bool isComplete() const;
+    bool validatePage();
 
 private:
     Q_DISABLE_COPY(InputClassInfoWizardPage)
