@@ -5,21 +5,6 @@
 
 namespace DataEngine
 {
-//class TaskBase : public QObject
-//{
-//    Q_OBJECT
-
-//public:
-//    TaskBase(QObject *parent = 0) : QObject(parent) {}
-//    ~TaskBase() {}
-
-//signals:
-//    /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
-//    void finished(int task, const QVariant &result);
-//};
-
-#define FUCK(x) x##Task
-
 class Task : public QObject
 {
     Q_OBJECT
@@ -31,11 +16,7 @@ public:
     void waitForFinished(Tasks task);
 
     template<typename TaskType>
-    inline TaskType *lookup() const
-    {
-        TaskType * ff = static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
-        return static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
-    }
+    inline TaskType *lookup() const;
 
 signals:
     /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
@@ -57,6 +38,12 @@ private:
     Q_DISABLE_COPY(Task)
     QHash<int, AbstractTaskBase *> taskSet;
 };
+
+template<typename TaskType>
+inline TaskType *Task::lookup() const
+{
+    return static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
+}
 }
 
 #endif // DATAENGINE_H

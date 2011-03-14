@@ -24,7 +24,8 @@ void InputGradeInfoWizardPagePrivate::connectSignalsAndSlots()
 
 void InputGradeInfoWizardPagePrivate::completeConstruct()
 {
-    task->lookup<DataEngine::FillGradeListTask>()->asyncRun(q->ui->gradeTreeWidget, tr("已经存在的年级"));
+    QPointer<QTreeWidget> gradeTreePtr = q->ui->gradeTreeWidget;
+    task->lookup<DataEngine::FillGradeListTask>()->asyncRun(gradeTreePtr, tr("已经存在的年级"));
 }
 
 void InputGradeInfoWizardPagePrivate::finished(int taskID, const QVariant &result)
