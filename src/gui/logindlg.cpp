@@ -136,7 +136,10 @@ void LoginDlgPrivate::finished(int taskID, const QVariant &result)
     {
     case DataEngine::InitializeDB:
         if(result.type() == QVariant::Bool && result.toBool())
-            task->lookup<DataEngine::FillAccountsListModelTask>()->asyncRun(&model, 10);//填充账户列表模型
+        {
+            const QPointer<QStandardItemModel> modelPtr = &model;
+            task->lookup<DataEngine::FillAccountsListModelTask>()->asyncRun(modelPtr, 10);//填充账户列表模型
+        }
         break;
     case DataEngine::Login:
         if(result.type() == QVariant::Bool && result.toBool())

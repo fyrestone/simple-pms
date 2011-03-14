@@ -29,7 +29,8 @@ inline void InputClassInfoWizardPagePrivate::completeConstruct()
 {
     hasTaskRunning = true;
 
-    task->lookup<DataEngine::FillClassListTask>()->run(q->ui->classTreeWidget, tr("已经存在的班级"), q->field("gradeNum").toInt());
+    QPointer<QTreeWidget> classTreePtr = q->ui->classTreeWidget;
+    task->lookup<DataEngine::FillClassListTask>()->run(classTreePtr, tr("已经存在的班级"), q->field("gradeNum").toInt());
 }
 
 inline bool InputClassInfoWizardPagePrivate::isComplete() const
