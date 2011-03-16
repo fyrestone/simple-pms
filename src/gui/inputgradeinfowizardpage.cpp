@@ -10,27 +10,30 @@ InputGradeInfoWizardPagePrivate::InputGradeInfoWizardPagePrivate(InputGradeInfoW
 {
 }
 
-void InputGradeInfoWizardPagePrivate::initializeMember()
+inline void InputGradeInfoWizardPagePrivate::initializeMember()
 {
-    q->ui->gradeLineEdit->setValidator(new QIntValidator(this));
-    q->registerField("gradeNum", q->ui->gradeLineEdit);
+    q->ui->gradeLineEdit->setValidator(new QIntValidator(this));    //设置整数验证器
+    q->registerField("gradeNum", q->ui->gradeLineEdit);             //注册gradeNum域
 }
 
-void InputGradeInfoWizardPagePrivate::connectSignalsAndSlots()
+inline void InputGradeInfoWizardPagePrivate::connectSignalsAndSlots()
 {
     connect(q->ui->gradeLineEdit,       SIGNAL(textChanged(QString)),
             q,                          SIGNAL(completeChanged()));
 }
 
-void InputGradeInfoWizardPagePrivate::completeConstruct()
+inline void InputGradeInfoWizardPagePrivate::completeConstruct()
 {
-    QPointer<QTreeWidget> gradeTreePtr = q->ui->gradeTreeWidget;
-    task->lookup<DataEngine::FillGradeListTask>()->asyncRun(gradeTreePtr, tr("已经存在的年级"));
+    QPointer<QTreeWidget> gradeTreePtr = q->ui->gradeTreeWidget;    //年级列表控件指针
+
+    (void)task->lookup<DataEngine::FillGradeListTask>()->run(gradeTreePtr, tr("已经存在的年级"));
 }
 
-void InputGradeInfoWizardPagePrivate::finished(int taskID, const QVariant &result)
+inline bool InputGradeInfoWizardPagePrivate::validatePage()
 {
+    int gradeNum = q->ui->gradeLineEdit->text().toInt();            //年级编号
 
+    return task->lookup<DataEngine::InsertOrUpdateClassTask>()->run(gradeNum, 1, tr("普通班"));
 }
 
 InputGradeInfoWizardPage::InputGradeInfoWizardPage(QWidget *parent) :
@@ -60,4 +63,9 @@ bool InputGradeInfoWizardPage::isComplete() const
     QList<QTreeWidgetItem *> match = ui->gradeTreeWidget->findItems(gradeNumStr, Qt::MatchExactly);
 
     return !gradeNumStr.isEmpty() && match.isEmpty();
+}
+
+bool InputGradeInfoWizardPage::validatePage()
+{
+    return d->validatePage();
 }

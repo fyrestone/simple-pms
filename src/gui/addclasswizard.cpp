@@ -13,7 +13,6 @@ AddClassWizard::AddClassWizard(QWidget *parent) :
     setButtonText(QWizard::CancelButton, tr("取消"));
 
     addPage(new InputClassInfoWizardPage);
-    qDebug() << "AddClassWizard:" << this->size();
 }
 
 AddClassWizard::~AddClassWizard()
