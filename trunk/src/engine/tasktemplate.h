@@ -30,7 +30,7 @@ namespace DataEngine
 \class WrapperBase
 \brief 成员函数指针包装类的基类
 
-使用本类指针（基类指针），存放由模板推导出的各成员函数包装类（子类 DataEngine::MemberFuncWrapper ）的地址。
+使用本类指针（基类指针），存放各成员函数包装类（子类 DataEngine::MemberFuncWrapper ）的地址。
 */
 class WrapperBase
 {
@@ -104,8 +104,8 @@ template<typename T>
 class TypeCleaner
 {
 public:
-    typedef T ArgT;                                     //参数类型：调用时的参数类型为T
-    typedef T BareT; //裸类型：无引用符&，无限定符const
+    typedef T ArgT;
+    typedef T BareT;
     typedef T const ConstT;
     typedef T& RefT;
     typedef T& RefBareT;
@@ -119,9 +119,10 @@ public:
 针对const类型的局部特化。
 */
 template<typename T>
-class TypeCleaner<T const>{ //针对const类型的局部特化
+class TypeCleaner<T const>
+{
 public:
-    typedef T const ArgT; //调用时的参数类型：有限定符const
+    typedef T const ArgT;
     typedef T BareT;
     typedef T const ConstT;
     typedef T const& RefT;
@@ -136,9 +137,10 @@ public:
 针对引用类型的局部特化。
 */
 template<typename T>
-class TypeCleaner<T&>{ //
+class TypeCleaner<T&>
+{
 public:
-    typedef T & ArgT; //调用时的参数类型：有限定符&
+    typedef T & ArgT;
     typedef typename TypeCleaner<T>::BareT BareT;
     typedef T const ConstT;
     typedef T & RefT;
@@ -153,9 +155,10 @@ public:
 针对void的全局特化，因为指向void的引用或const类型不允许。
 */
 template<>
-class TypeCleaner<void>{ //
+class TypeCleaner<void>
+{
 public:
-    typedef void ArgT; //调用时的参数类型：为void
+    typedef void ArgT;
     typedef void BareT;
     typedef void const ConstT;
     typedef void RefT;

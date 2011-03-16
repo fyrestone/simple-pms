@@ -16,9 +16,7 @@ public:
     void initializeMember();
     void connectSignalsAndSlots();
     void completeConstruct();
-
-private slots:
-    void finished(int taskID, const QVariant &result);
+    bool validatePage();
 
 private:
     Q_DISABLE_COPY(InputGradeInfoWizardPagePrivate)
