@@ -10,7 +10,8 @@
 #ifndef TASKTEMPLATE_H
 #define TASKTEMPLATE_H
 
-#include <QDebug>   /* 使用qWarning */
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
 
 namespace DataEngine
 {

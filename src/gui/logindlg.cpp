@@ -2,7 +2,9 @@
 #include "logindlg_p.h"
 #include "ui_logindlg.h"
 #include "../context/context.h"
+
 #include <QMessageBox>
+#include <QCompleter>
 
 LoginDlgPrivate::LoginDlgPrivate(LoginDlg *parent) :
     task(DataEngine::Task::instance()),

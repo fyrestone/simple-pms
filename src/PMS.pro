@@ -11,7 +11,11 @@ TEMPLATE = app
 
 QTPLUGIN += qcncodecs qsqlite
 
-CONFIG += precompiled_header
+message($$_PRO_FILE_PWD_/../plugins)
+unix:LIBS += -L$$_PRO_FILE_PWD_/../plugins/linux -lqcncodecs -lqsqlite
+#win32:LIBS += c:/mylibs/math.lib
+
+CONFIG += precompile_header
 
 PRECOMPILED_HEADER = pch.h
 

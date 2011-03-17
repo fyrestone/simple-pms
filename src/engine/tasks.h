@@ -2,6 +2,7 @@
 #define ABSTRACTTASK_H
 
 #include "tasktemplate.h"
+
 #include <QObject>
 #include <QPointer>
 #include <QList>

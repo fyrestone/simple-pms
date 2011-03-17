@@ -2,6 +2,8 @@
 #include "ui_addgradewizard.h"
 #include "inputgradeinfowizardpage.h"
 
+#include <QDebug>
+
 AddGradeWizard::AddGradeWizard(QWidget *parent) :
     QWizard(parent),
     ui(new Ui::AddGradeWizard)
