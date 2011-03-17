@@ -1,10 +1,11 @@
 #ifndef LOGINDLG_P_H
 #define LOGINDLG_P_H
 
+#include "../engine/dataengine.h"       /* 使用Task */
+
 #include <QtCore/QObject>               /* 继承自QObject */
 #include <QTreeView>                    /* 使用QTreeView */
 #include <QStandardItemModel>           /* 使用QStandardItemModel */
-#include "../engine/dataengine.h"       /* 使用Task */
 
 class LoginDlg;
 

@@ -1,6 +1,12 @@
-#include "pch.h"
 #include "gui/logindlg.h"
 #include "gui/mainwin.h"
+
+#include <QApplication>
+#include <QTextCodec>
+#include <QTranslator>
+#include <QPlastiqueStyle>
+#include <QThread>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {

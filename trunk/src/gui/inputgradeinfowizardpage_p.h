@@ -1,8 +1,9 @@
 #ifndef INPUTGRADEINFOWIZARDPAGE_P_H
 #define INPUTGRADEINFOWIZARDPAGE_P_H
 
-#include <QtCore/QObject>               /* 继承自QObject */
 #include "../engine/dataengine.h"       /* 使用Task */
+
+#include <QtCore/QObject>               /* 继承自QObject */
 
 class InputGradeInfoWizardPage;
 

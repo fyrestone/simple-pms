@@ -1,12 +1,14 @@
 #ifndef MAINWIN_P_H
 #define MAINWIN_P_H
 
-#include <QtCore/QObject>           /* 使用QObject */
-#include <QPushButton>              /* addTabButton/delTabButton */
 #include "aboutdlg.h"               /* 使用AboutDlg */
 #include "addgradewizard.h"         /* 使用AddGradeWizard */
 #include "addclasswizard.h"         /* 使用AddClassWizard */
 #include "../engine/dataengine.h"   /* 使用Task */
+
+#include <QtCore/QObject>           /* 使用QObject */
+#include <QPushButton>              /* addTabButton/delTabButton */
+#include <QMenu>
 
 class MainWin;
 

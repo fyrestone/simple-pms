@@ -4,6 +4,7 @@
 #include <QtCore>
 #include <QtGui>
 #include <QtSql>
+#include <QDebug>
 
 Q_IMPORT_PLUGIN(qcncodecs)
 Q_IMPORT_PLUGIN(qsqlite)
