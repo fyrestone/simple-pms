@@ -16,7 +16,8 @@ public:
     void waitForFinished(Tasks task);
 
     template<typename TaskType>
-    inline TaskType *lookup() const;
+    inline TaskType *lookup() const
+    { return static_cast<TaskType *>(taskSet.value(TaskType::type, NULL)); }
 
 signals:
     /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */
@@ -29,12 +30,6 @@ private:
     Q_DISABLE_COPY(Task)
     QHash<int, AbstractTaskBase *> taskSet;
 };
-
-template<typename TaskType>
-inline TaskType *Task::lookup() const
-{
-    return static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
-}
 }
 
 #endif // DATAENGINE_H

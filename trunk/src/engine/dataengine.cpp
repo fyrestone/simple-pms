@@ -1,4 +1,5 @@
 #include "dataengine.h"
+
 #include <QGlobalStatic>    /* 使用Q_GLOBAL_STATIC来单例化 */
 
 using namespace DataEngine;

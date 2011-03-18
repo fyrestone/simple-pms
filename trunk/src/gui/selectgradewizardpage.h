@@ -7,16 +7,26 @@ namespace Ui {
     class SelectGradeWizardPage;
 }
 
+class SelectGradeWizardPagePrivate;
+
 class SelectGradeWizardPage : public QWizardPage
 {
     Q_OBJECT
+
+    friend class SelectGradeWizardPagePrivate;
 
 public:
     explicit SelectGradeWizardPage(QWidget *parent = 0);
     ~SelectGradeWizardPage();
 
+    void initializePage();
+    bool isComplete() const;
+    bool validatePage();
+
 private:
-    Ui::SelectGradeWizardPage *ui;
+    Q_DISABLE_COPY(SelectGradeWizardPage)
+    Ui::SelectGradeWizardPage * const ui;
+    SelectGradeWizardPagePrivate * const d;
 };
 
 #endif // SELECTGRADEWIZARDPAGE_H

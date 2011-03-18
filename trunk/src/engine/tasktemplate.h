@@ -281,8 +281,6 @@ inline void AbstractTask<C, N, T>::ENGINE_ASYNC_FUNC_NAME(const Arg1 &arg1)
 {
     typedef T (C::*FuncType)(Arg1);
 
-    qDebug() << TypeChecker<FuncType>::uuid() << lastChecker;
-
     if(TypeChecker<FuncType>::hasRegistered() && TypeChecker<FuncType>::uuid() == lastChecker)
     {
         typedef const MemberFuncWrapper<FuncType> *WrapperType;
@@ -526,8 +524,6 @@ inline void AbstractTask<C, N, T>::setRunEntry(T (C::*runFn)(Param1))
 
     TypeChecker<CleanedFuncType>::registerType();
     lastChecker = TypeChecker<CleanedFuncType>::uuid();
-
-    qDebug() << TypeChecker<CleanedFuncType>::uuid() << lastChecker;
 }
 
 template<typename C, int N, typename T>
