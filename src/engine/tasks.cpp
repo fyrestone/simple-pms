@@ -1,6 +1,7 @@
 #include "tasks.h"
 #include "../context/context.h"
 #include "../gui/custom/navigationitem.h"
+
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
@@ -507,6 +508,8 @@ void FillNavigationTreeTask::recvData(QPointer<QTreeWidget> widget, const QList<
         classItem->setText(0, QString::number(currClassNum) + tr("班"));
         classItem->setData(0, NavigationItem::ExtraData, currClassNum);
     }
+
+    widget->expandAll();
 }
 
 FillGradeListTask::FillGradeListTask(QObject *parent) :

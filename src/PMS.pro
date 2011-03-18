@@ -13,7 +13,7 @@ QTPLUGIN += qcncodecs qsqlite
 
 message($$_PRO_FILE_PWD_/../plugins)
 unix:LIBS += -L$$_PRO_FILE_PWD_/../plugins/linux -lqcncodecs -lqsqlite
-#win32:LIBS += c:/mylibs/math.lib
+win32:LIBS += -L$$_PRO_FILE_PWD_/../plugins/windows -lqcncodecs -lqsqlite
 
 CONFIG += precompile_header
 
@@ -54,7 +54,8 @@ HEADERS  += pch.h \
     gui/inputgradeinfowizardpage_p.h \
     engine/tasks.h \
     engine/tasktemplate.h \
-    gui/inputclassinfowizardpage_p.h
+    gui/inputclassinfowizardpage_p.h \
+    gui/selectgradewizardpage_p.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \

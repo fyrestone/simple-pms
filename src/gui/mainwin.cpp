@@ -64,13 +64,9 @@ void MainWinPrivate::finished(int taskID, const QVariant &result)
 {
     switch(taskID)
     {
-    case DataEngine::FillNavigationTree:
-        if(result.type() == QVariant::Bool && result.toBool())
-        {}
-        break;
     case DataEngine::InsertOrUpdateClass:
         if(result.type() == QVariant::Bool && result.toBool())
-            //task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(q->ui->navigationTree, tr("驻马店第一初级中学"));
+            task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(q->ui->navigationTree, tr("驻马店第一初级中学"));
         break;
     }
 }

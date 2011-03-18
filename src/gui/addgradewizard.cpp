@@ -11,11 +11,15 @@ AddGradeWizard::AddGradeWizard(QWidget *parent) :
     ui->setupUi(this);
 
     setFixedSize(width(), height());
+
+    setButtonText(QWizard::BackButton, tr("上一步"));
+    setButtonText(QWizard::NextButton, tr("下一步"));
+    setButtonText(QWizard::CommitButton, tr("提交"));
     setButtonText(QWizard::FinishButton, tr("完成"));
     setButtonText(QWizard::CancelButton, tr("取消"));
+    setButtonText(QWizard::HelpButton, tr("帮助"));
 
     addPage(new InputGradeInfoWizardPage);
-    qDebug() << "AddGradeWizard:" << this->size();
 }
 
 AddGradeWizard::~AddGradeWizard()
