@@ -12,6 +12,7 @@ InputClassInfoWizardPagePrivate::InputClassInfoWizardPagePrivate(InputClassInfoW
 
 inline void InputClassInfoWizardPagePrivate::initializeMember()
 {
+    q->ui->classTypeComboBox->setModel(&model);
     q->ui->classLineEdit->setValidator(new QIntValidator(this));    //设置整数验证器
     q->registerField("classNum", q->ui->classLineEdit);             //注册classNum域
 }
@@ -20,14 +21,18 @@ inline void InputClassInfoWizardPagePrivate::connectSignalsAndSlots()
 {
     connect(q->ui->classLineEdit,       SIGNAL(textChanged(QString)),
             q,                          SIGNAL(completeChanged()));
+    connect(q->ui->classTypeComboBox,   SIGNAL(currentIndexChanged(int)),
+            q,                          SIGNAL(completeChanged()));
 }
 
 inline void InputClassInfoWizardPagePrivate::completeConstruct()
 {
     QPointer<QTreeWidget> classTreePtr = q->ui->classTreeWidget;    //班级列表控件指针
+    QPointer<QStandardItemModel> classTypeComboModel = &model;      //班级类型组合列表模型
     int gradeNum = q->field("gradeNum").toInt();                    //年级编号
 
     (void)task->lookup<DataEngine::FillClassListTask>()->run(classTreePtr, tr("已经存在的班级"), gradeNum);
+    (void)task->lookup<DataEngine::FillClassTypeListModelTask>()->run(classTypeComboModel);
 }
 
 inline bool InputClassInfoWizardPagePrivate::validatePage()
@@ -36,8 +41,9 @@ inline bool InputClassInfoWizardPagePrivate::validatePage()
 
     int gradeNum = q->field("gradeNum").toInt(&success);            //年级编号
     int classNum = q->ui->classLineEdit->text().toInt();            //班级编号
+    int classTypeID = model.data(model.index(q->ui->classTypeComboBox->currentIndex(), 1)).toInt();
 
-    return success && task->lookup<DataEngine::InsertOrUpdateClassTask>()->run(gradeNum, classNum, tr("普通班"));
+    return success && task->lookup<DataEngine::InsertOrUpdateClassTask>()->run(gradeNum, classNum, classTypeID);
 }
 
 InputClassInfoWizardPage::InputClassInfoWizardPage(QWidget *parent) :

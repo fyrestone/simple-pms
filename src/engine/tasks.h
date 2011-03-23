@@ -25,7 +25,8 @@ namespace DataEngine
         FillAccountsListModel,              ///< 填充账号列表模型
         FillNavigationTree,                 ///< 填充班级树模型
         FillGradeList,                      ///< 填充年级列表
-        FillClassList                       ///< 填充班级列表
+        FillClassList,                      ///< 填充班级列表
+        FillClassTypeListModel              ///< 填充班级类型列表模型
     };
 
     class InitializeDBTask : public AbstractTask<InitializeDBTask, InitializeDB, bool>
@@ -57,7 +58,7 @@ namespace DataEngine
     public:
         InsertOrUpdateClassTask(QObject *parent = 0);
 
-        bool run(int gradeNum, int classNum, const QString &classType);
+        bool run(int gradeNum, int classNum, int classTypeID = 0);
     };
 
     class FillAccountsListModelTask : public AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>
@@ -130,6 +131,24 @@ namespace DataEngine
     private slots:
         void initWidget(QPointer<QTreeWidget> widget, const QString &headName);
         void recvData(QPointer<QTreeWidget> widget, const QVariant &data);
+    };
+
+    class FillClassTypeListModelTask : public AbstractTask<FillClassTypeListModelTask, FillClassTypeListModel, bool>
+    {
+        Q_OBJECT
+
+    public:
+        FillClassTypeListModelTask(QObject *parent = 0);
+
+        bool run(QPointer<QStandardItemModel> model);
+
+    signals:
+        void querySuccess(QPointer<QStandardItemModel> model);
+        void sendData(QPointer<QStandardItemModel> model, const QSqlRecord &record);
+
+    private slots:
+        void initModel(QPointer<QStandardItemModel> model);
+        void recvData(QPointer<QStandardItemModel> model, const QSqlRecord &record);
     };
 }
 

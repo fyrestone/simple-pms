@@ -6,6 +6,7 @@
 #include <QtCore/QObject>               /* 继承自QObject */
 
 class SelectGradeWizardPage;
+class QTreeWidgetItem;
 
 class SelectGradeWizardPagePrivate : public QObject
 {
@@ -18,6 +19,9 @@ public:
     void connectSignalsAndSlots();
     void completeConstruct();
     bool validatePage();
+
+private slots:
+    void doItemClicked(QTreeWidgetItem *item, int column);
 
 private:
     Q_DISABLE_COPY(SelectGradeWizardPagePrivate)

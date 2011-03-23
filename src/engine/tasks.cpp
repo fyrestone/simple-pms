@@ -62,12 +62,18 @@ bool InitializeDBTask::createConnection(const QString &dbPath)
 
 bool InitializeDBTask::createTable()
 {
+    static const QString createClassTypeTable = tr(
+            "CREATE TABLE IF NOT EXISTS ClassType ("
+                "class_type_id INTEGER PRIMARY KEY NOT NULL,"
+                "name NVARCHAR(20))"
+            );
     static const QString createGradeClassTable = tr(
             "CREATE TABLE IF NOT EXISTS GradeClass ("
                 "grade INTEGER NOT NULL,"
                 "class INTEGER NOT NULL,"
-                "type NVARCHAR(20) DEFAULT \"普通班\","
-                "PRIMARY KEY(grade, class))"
+                "class_type_id INTEGER NOT NULL DEFAULT 0,"
+                "PRIMARY KEY(grade, class),"
+                "FOREIGN KEY(class_type_id) REFERENCES ClassType(class_type_id) ON DELETE SET DEFAULT ON UPDATE CASCADE)"
             );
     static const QString createStudentsTable = tr(
             "CREATE TABLE IF NOT EXISTS Students ("
@@ -78,7 +84,7 @@ bool InitializeDBTask::createTable()
                 "class INTEGER,"
                 "in_school INTEGER NOT NULL DEFAULT 1,"
                 "PRIMARY KEY(student_id),"
-                "FOREIGN KEY(grade, class) REFERENCES GradeClass(grade, class),"
+                "FOREIGN KEY(grade, class) REFERENCES GradeClass(grade, class) ON DELETE SET NULL ON UPDATE CASCADE,"
                 "CHECK(sex IN ('男', '女')))"
             );
     static const QString createExamsTable = tr(
@@ -90,15 +96,27 @@ bool InitializeDBTask::createTable()
             );
     static const QString createCoursesTable = tr(
             "CREATE TABLE IF NOT EXISTS Courses ("
-                "course_id INTEGER NOT NULL,"
+                "course_id INTEGER PRIMARY KEY NOT NULL,"
                 "exam_id INTEGER NOT NULL,"
                 "name NVARCHAR(10),"
+                "FOREIGN KEY(exam_id) REFERENCES Exams(exam_id) ON DELETE CASCADE ON UPDATE CASCADE)"
+            );
+    static const QString createNormalCoursesTable = tr(
+            "CREATE TABLE IF NOT EXISTS NormalCourses ("
+                "course_id INTEGER NOT NULL,"
                 "full_mark DECIMAL(10,2) DEFAULT 100,"
                 "pass_rate FLOAT(2) DEFAULT 0.6 CHECK(pass_rate >=0 and pass_rate <= 1),"
                 "good_rate FLOAT(2) DEFAULT 0.8 CHECK(good_rate >=0 and good_rate <= 1),"
                 "excellent_rate FLOAT(2) DEFAULT 0.9 CHECK(excellent_rate >=0 and excellent_rate <= 1),"
                 "PRIMARY KEY(course_id),"
-                "FOREIGN KEY(exam_id) REFERENCES Exams(exam_id))"
+                "FOREIGN KEY(course_id) REFERENCES Courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE)"
+            );
+    static const QString createSpecialCoursesTable = tr(
+            "CREATE TABLE IF NOT EXISTS SpecialCourses ("
+                "course_id INTEGER NOT NULL,"
+                "command NVARCHAR(100),"
+                "PRIMARY KEY(course_id),"
+                "FOREIGN KEY(course_id) REFERENCES Courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE)"
             );
     static const QString createScoresTable = tr(
             "CREATE TABLE IF NOT EXISTS Scores ("
@@ -106,16 +124,13 @@ bool InitializeDBTask::createTable()
                 "course_id INTEGER NOT NULL,"
                 "exam_id INTEGER NOT NULL,"
                 "score DECIMAL(10,2),"
-                "FOREIGN KEY(student_id) REFERENCES Students(student_id),"
-                "FOREIGN KEY(course_id) REFERENCES Courses(Course_id),"
-                "FOREIGN KEY(exam_id) REFERENCES Exams(exam_id))"
-            );
-    static const QString createClassTypeSetTable = tr(
-            "CREATE TABLE IF NOT EXISTS ClassTypeSet ("
-                "name NVARCHAR(20))"
+                "PRIMARY KEY(student_id, course_id, exam_id),"
+                "FOREIGN KEY(student_id) REFERENCES Students(student_id) ON DELETE CASCADE ON UPDATE CASCADE,"
+                "FOREIGN KEY(course_id) REFERENCES Courses(Course_id) ON DELETE CASCADE ON UPDATE CASCADE,"
+                "FOREIGN KEY(exam_id) REFERENCES Exams(exam_id) ON DELETE CASCADE ON UPDATE CASCADE)"
             );
     static const QString createCourseSetTable = tr(
-            "CREATE TABLE IF NOT EXISTS CourseSet ("
+            "CREATE TABLE IF NOT EXISTS CourseNameSet ("
                 "name NVARCHAR(10))"
             );
     static const QString createAccountsTable = tr(
@@ -141,7 +156,10 @@ bool InitializeDBTask::createTable()
     {
         QSqlQuery sql(db);
 
-        success = sql.exec(createGradeClassTable);
+        success = sql.exec(createClassTypeTable);
+
+        if(success)
+            success = sql.exec(createGradeClassTable);
 
         if(success)
             success = sql.exec(createStudentsTable);
@@ -153,10 +171,13 @@ bool InitializeDBTask::createTable()
             success = sql.exec(createCoursesTable);
 
         if(success)
-            success = sql.exec(createScoresTable);
+            success = sql.exec(createNormalCoursesTable);
 
         if(success)
-            success = sql.exec(createClassTypeSetTable);
+            success = sql.exec(createSpecialCoursesTable);
+
+        if(success)
+            success = sql.exec(createScoresTable);
 
         if(success)
             success = sql.exec(createCourseSetTable);
@@ -178,17 +199,23 @@ bool InitializeDBTask::createTable()
 
 bool InitializeDBTask::fillInitialData()
 {
+    static const QString fillDefaultClassType = tr(
+            "INSERT OR REPLACE INTO ClassType"
+                "(class_type_id, name)"
+                "VALUES"
+                "(0, \"普通班\")"
+            );
     static const QString fillVersionNumber = tr(
             "INSERT OR REPLACE INTO Version"
-            "(major_version, minor_version)"
-            "VALUES"
-            "(2, 0)"
+                "(major_version, minor_version)"
+                "VALUES"
+                "(2, 0)"
             );
     static const QString fillAccount = tr(
             "INSERT OR IGNORE INTO Accounts"
-            "(account_id, account_pwd, name, permission)"
-            "VALUES"
-            "(:id, :password, :username, :permission)"
+                "(account_id, account_pwd, name, permission)"
+                "VALUES"
+                "(:id, :password, :username, :permission)"
             );
 
     bool success = false;
@@ -201,7 +228,10 @@ bool InitializeDBTask::fillInitialData()
         QByteArray byteArray;           //Permission序列化的字节流
         Permission permission;
 
-        success = sql.exec(fillVersionNumber);
+        success = sql.exec(fillDefaultClassType);
+
+        if(success)
+            success = sql.exec(fillVersionNumber);
 
         if(success)
             success = sql.prepare(fillAccount);
@@ -332,14 +362,13 @@ InsertOrUpdateClassTask::InsertOrUpdateClassTask(QObject *parent) :
     AbstractTask<InsertOrUpdateClassTask, InsertOrUpdateClass, bool>(parent)
 {
     setRunEntry(&InsertOrUpdateClassTask::run);
-    //int j = InsertOrUpdateClassTask::type;
 }
 
-bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &classType)
+bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, int classTypeID)
 {
     static const QString insertGradeClass = tr(
-            "INSERT OR REPLACE INTO GradeClass(grade, class, type) "
-                "VALUES (:grade, :class, :type)"
+            "INSERT OR REPLACE INTO GradeClass(grade, class, class_type_id) "
+                "VALUES (:grade, :class, :class_type_id)"
             );
 
     bool success = false;
@@ -350,7 +379,7 @@ bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, const QString &cla
     {
         sql.bindValue(":grade", gradeNum);
         sql.bindValue(":class", classNum);
-        sql.bindValue(":type", classType);
+        sql.bindValue(":class_type_id", classTypeID);
 
         success = sql.exec();
     }
@@ -609,8 +638,6 @@ bool FillClassListTask::run(QPointer<QTreeWidget> widget, const QString &headNam
         }
     }
 
-    qDebug() << sql.lastError().text();
-
     PRINT_RUN_THREAD();
 
     return success;
@@ -641,4 +668,58 @@ void FillClassListTask::recvData(QPointer<QTreeWidget> widget, const QVariant &d
     classItem->setTextAlignment(0, Qt::AlignCenter);
 
     widget->addTopLevelItem(classItem);
+}
+
+FillClassTypeListModelTask::FillClassTypeListModelTask(QObject *parent) :
+    AbstractTask<FillClassTypeListModelTask, FillClassTypeListModel, bool>(parent)
+{
+    setRunEntry(&FillClassTypeListModelTask::run);
+
+    connect(this,       SIGNAL(querySuccess(QPointer<QStandardItemModel>)),
+            this,       SLOT(initModel(QPointer<QStandardItemModel>)));
+    connect(this,       SIGNAL(sendData(QPointer<QStandardItemModel>,QSqlRecord)),
+            this,       SLOT(recvData(QPointer<QStandardItemModel>,QSqlRecord)));
+}
+
+bool FillClassTypeListModelTask::run(QPointer<QStandardItemModel> model)
+{
+    static const QString classTypeQuery = tr(
+            "SELECT class_type_id, name from ClassType order by class_type_id ASC"
+            );
+
+    bool success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.exec(classTypeQuery))
+    {
+        emit querySuccess(model);
+
+        while(sql.next()) sendData(model, sql.record());
+
+        success = true;
+    }
+
+    PRINT_RUN_THREAD();
+
+    return success;
+}
+
+void FillClassTypeListModelTask::initModel(QPointer<QStandardItemModel> model)
+{
+    RETURN_IF_FAIL(model);
+
+    model->clear();
+}
+
+void FillClassTypeListModelTask::recvData(QPointer<QStandardItemModel> model, const QSqlRecord &record)
+{
+    RETURN_IF_FAIL(model);
+
+    QList<QStandardItem *> row;
+
+    row.append(new QStandardItem(record.value(1).toString()));     //班级类型名
+    row.append(new QStandardItem(record.value(0).toString()));     //班级类型序号
+
+    model->appendRow(row);
 }
