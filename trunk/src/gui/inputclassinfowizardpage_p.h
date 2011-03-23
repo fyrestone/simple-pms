@@ -4,6 +4,7 @@
 #include "../engine/dataengine.h"       /* 使用Task */
 
 #include <QtCore/QObject>               /* 继承自QObject */
+#include <QStandardItemModel>           /* 使用QStandardItemModel */
 
 class InputClassInfoWizardPage;
 
@@ -23,6 +24,7 @@ private:
     Q_DISABLE_COPY(InputClassInfoWizardPagePrivate)
     DataEngine::Task * const task;
     InputClassInfoWizardPage * const q;
+    QStandardItemModel model;
 };
 
 #endif // INPUTCLASSINFOWIZARDPAGE_P_H

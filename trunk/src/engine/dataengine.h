@@ -17,7 +17,12 @@ public:
 
     template<typename TaskType>
     inline TaskType *lookup() const
-    { return static_cast<TaskType *>(taskSet.value(TaskType::type, NULL)); }
+    {
+        TaskType *task = static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
+        Q_ASSERT_X(task, "DataEngine::Task()->lookup()", "such task not exist!");
+
+        return task;
+    }
 
 signals:
     /* 此处task不用枚举为了避免产生“enumeration value '***' not handled in switch”警告 */

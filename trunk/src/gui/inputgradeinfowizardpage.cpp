@@ -33,7 +33,7 @@ inline bool InputGradeInfoWizardPagePrivate::validatePage()
 {
     int gradeNum = q->ui->gradeLineEdit->text().toInt();            //年级编号
 
-    return task->lookup<DataEngine::InsertOrUpdateClassTask>()->run(gradeNum, 1, tr("普通班"));
+    return task->lookup<DataEngine::InsertOrUpdateClassTask>()->run(gradeNum, 1);
 }
 
 InputGradeInfoWizardPage::InputGradeInfoWizardPage(QWidget *parent) :

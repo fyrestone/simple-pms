@@ -15,6 +15,7 @@ Task::Task()
     registerTask(FillNavigationTree,    new FillNavigationTreeTask(this));
     registerTask(FillGradeList,         new FillGradeListTask(this));
     registerTask(FillClassList,         new FillClassListTask(this));
+    registerTask(FillClassTypeListModel,new FillClassTypeListModelTask(this));
 }
 
 Task *Task::instance()

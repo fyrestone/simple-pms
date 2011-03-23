@@ -49,6 +49,13 @@ p, li { white-space: pre-wrap; }
        </property>
       </spacer>
      </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>
