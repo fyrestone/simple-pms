@@ -7,9 +7,7 @@
 MainWinPrivate::MainWinPrivate(MainWin *parent) :
     task(DataEngine::Task::instance()),
     q(parent),
-    aboutDlg(parent),
-    addGradeWizard(parent),
-    addClassWizard(parent)
+    aboutDlg(parent)
 {
 }
 
@@ -31,8 +29,8 @@ void MainWinPrivate::initializeMember()
     QAction *delClassAct = new QAction(tr("删除班级"), this);
     QAction *modClassTypeAct = new QAction(tr("修改班级类型"), this);
 
-    connect(addGradeAct, SIGNAL(triggered()), &addGradeWizard, SLOT(open()));
-    connect(addClassAct, SIGNAL(triggered()), &addClassWizard, SLOT(open()));
+    connect(addGradeAct, SIGNAL(triggered()), this, SLOT(showAddGradeWizard()));
+    connect(addClassAct, SIGNAL(triggered()), this, SLOT(showAddClassWizard()));
 
     rootContextMenu.addAction(addGradeAct);
     gradeContextMenu.addAction(addClassAct);
@@ -57,18 +55,13 @@ void MainWinPrivate::connectSignalsAndSlots()
 
 void MainWinPrivate::completeConstruct()
 {
-    task->lookup<DataEngine::FillNavigationTreeTask>()->run(q->ui->navigationTree, tr("驻马店第一初级中学"));
+    task->lookup<DataEngine::FillNavigationTreeTask>()->run(
+                q->ui->navigationTree, tr("驻马店第一初级中学"));
 }
 
 void MainWinPrivate::finished(int taskID, const QVariant &result)
 {
-    switch(taskID)
-    {
-    case DataEngine::InsertOrUpdateClass:
-        if(result.type() == QVariant::Bool && result.toBool())
-            task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(q->ui->navigationTree, tr("驻马店第一初级中学"));
-        break;
-    }
+
 }
 
 void MainWinPrivate::showNavigationContextMenu(const QPoint &pos)
@@ -89,6 +82,32 @@ void MainWinPrivate::showNavigationContextMenu(const QPoint &pos)
             classContextMenu.popup(q->ui->navigationTree->mapToGlobal(pos));
             break;
         }
+    }
+}
+
+void MainWinPrivate::showAddGradeWizard()
+{
+    AddGradeWizard addGradeWizard(q);
+
+    if(addGradeWizard.exec() == QDialog::Accepted)
+    {
+        QPointer<QTreeWidget> navigationTree = q->ui->navigationTree;
+
+        task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(
+                    navigationTree, tr("驻马店第一初级中学"));
+    }
+}
+
+void MainWinPrivate::showAddClassWizard()
+{
+    AddClassWizard addClassWizard(q);
+
+    if(addClassWizard.exec() == QDialog::Accepted)
+    {
+        QPointer<QTreeWidget> navigationTree = q->ui->navigationTree;
+
+        task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(
+                    navigationTree, tr("驻马店第一初级中学"));
     }
 }
 
