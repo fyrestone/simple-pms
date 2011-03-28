@@ -26,7 +26,6 @@ SOURCES += main.cpp\
     gui/aboutdlg.cpp \
     engine/dataengine.cpp \
     context/context.cpp \
-    gui/custom/navigationitem.cpp \
     gui/addclasswizard.cpp \
     gui/addgradewizard.cpp \
     gui/selectgradewizardpage.cpp \
@@ -45,7 +44,6 @@ HEADERS  += pch.h \
     gui/tabpage_p.h \
     gui/mainwin_p.h \
     gui/logindlg_p.h \
-    gui/custom/navigationitem.h \
     gui/addclasswizard.h \
     gui/addgradewizard.h \
     gui/selectgradewizardpage.h \
