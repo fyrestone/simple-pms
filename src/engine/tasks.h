@@ -29,6 +29,14 @@ namespace DataEngine
         FillClassTypeListModel              ///< 填充班级类型列表模型
     };
 
+    enum NavigationItemType
+    {
+        /* QTreeWidgetItem::ItemType的1000以下Qt保留使用 */
+        Root = 1001,                        ///< 根节点
+        Grade = 1002,                       ///< 年级节点
+        Class = 1003                        ///< 班级节点
+    };
+
     class InitializeDBTask : public AbstractTask<InitializeDBTask, InitializeDB, bool>
     {
     public:

@@ -1,7 +1,6 @@
 #include "mainwin.h"
 #include "mainwin_p.h"
 #include "ui_mainwin.h"
-#include "../gui/custom/navigationitem.h"
 #include "../context/context.h"
 
 MainWinPrivate::MainWinPrivate(MainWin *parent) :
@@ -72,16 +71,18 @@ void MainWinPrivate::showNavigationContextMenu(const QPoint &pos)
     {
         switch(item->type())
         {
-        case NavigationItem::Root:
+        case DataEngine::Root:
             rootContextMenu.popup(q->ui->navigationTree->mapToGlobal(pos));
             break;
-        case NavigationItem::Grade:
+        case DataEngine::Grade:
             gradeContextMenu.popup(q->ui->navigationTree->mapToGlobal(pos));
             break;
-        case NavigationItem::Class:
+        case DataEngine::Class:
             classContextMenu.popup(q->ui->navigationTree->mapToGlobal(pos));
             break;
         }
+
+        qDebug() << item->data(0, Qt::UserRole);
     }
 }
 

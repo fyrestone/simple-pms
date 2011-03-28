@@ -1,6 +1,5 @@
 #include "tasks.h"
 #include "../context/context.h"
-#include "../gui/custom/navigationitem.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -506,7 +505,7 @@ void FillNavigationTreeTask::initWidget(QPointer<QTreeWidget> widget, const QStr
 
     widget->clear();
 
-    NavigationItem *root  = new NavigationItem(NavigationItem::Root);   //根结点
+    QTreeWidgetItem *root = new QTreeWidgetItem(Root);
     root->setText(0, rootName);
 
     widget->addTopLevelItem(root);
@@ -516,7 +515,7 @@ void FillNavigationTreeTask::recvData(QPointer<QTreeWidget> widget, const QList<
 {
     RETURN_IF_FAIL(widget);
 
-    NavigationItem *lastGradeItem = NULL;
+    QTreeWidgetItem *lastGradeItem = NULL;
     int lastGradeNum = -1;
 
     for(int i = 0; i < data.count(); ++i)
@@ -528,14 +527,14 @@ void FillNavigationTreeTask::recvData(QPointer<QTreeWidget> widget, const QList<
         {
             lastGradeNum = currGradeNum;
 
-            lastGradeItem = new NavigationItem(widget->topLevelItem(0), NavigationItem::Grade);
+            lastGradeItem = new QTreeWidgetItem(widget->topLevelItem(0), Grade);
             lastGradeItem->setText(0, QString::number(currGradeNum) + tr("级"));
-            lastGradeItem->setData(0, NavigationItem::ExtraData, currGradeNum);
+            lastGradeItem->setData(0, Qt::UserRole, currGradeNum);
         }
 
-        NavigationItem *classItem = new NavigationItem(lastGradeItem, NavigationItem::Class);
+        QTreeWidgetItem *classItem = new QTreeWidgetItem(lastGradeItem, Class);
         classItem->setText(0, QString::number(currClassNum) + tr("班"));
-        classItem->setData(0, NavigationItem::ExtraData, currClassNum);
+        classItem->setData(0, Qt::UserRole, currClassNum);
     }
 
     widget->expandAll();
