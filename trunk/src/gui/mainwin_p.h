@@ -26,14 +26,14 @@ public:
 private slots:
     void finished(int taskID, const QVariant &result);
     void showNavigationContextMenu(const QPoint &pos);
+    void showAddGradeWizard();
+    void showAddClassWizard();
 
 private:
     Q_DISABLE_COPY(MainWinPrivate)
     DataEngine::Task * const task;
     MainWin * const q;
     AboutDlg aboutDlg;
-    AddGradeWizard addGradeWizard;
-    AddClassWizard addClassWizard;
     QPushButton addTabButton;
     QPushButton delTabButton;
     QMenu rootContextMenu;

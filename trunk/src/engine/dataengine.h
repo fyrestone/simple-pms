@@ -19,7 +19,7 @@ public:
     inline TaskType *lookup() const
     {
         TaskType *task = static_cast<TaskType *>(taskSet.value(TaskType::type, NULL));
-        Q_ASSERT_X(task, "DataEngine::Task()->lookup()", "such task not exist!");
+        Q_ASSERT_X(task, "DataEngine::Task()->lookup()", "no such task!");
 
         return task;
     }
