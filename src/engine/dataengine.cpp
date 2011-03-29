@@ -11,6 +11,7 @@ Task::Task()
     registerTask(InitializeDB,          new InitializeDBTask(this));
     registerTask(Login,                 new LoginTask(this));
     registerTask(InsertOrUpdateClass,   new InsertOrUpdateClassTask(this));
+    registerTask(DeleteClass,           new DeleteClassTask(this));
     registerTask(FillAccountsListModel, new FillAccountsListModelTask(this));
     registerTask(FillNavigationTree,    new FillNavigationTreeTask(this));
     registerTask(FillGradeList,         new FillGradeListTask(this));

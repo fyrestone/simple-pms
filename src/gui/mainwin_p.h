@@ -28,6 +28,7 @@ private slots:
     void showNavigationContextMenu(const QPoint &pos);
     void showAddGradeWizard();
     void showAddClassWizard();
+    void deleteGradeClass();
 
 private:
     Q_DISABLE_COPY(MainWinPrivate)
