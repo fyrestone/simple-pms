@@ -121,7 +121,7 @@ p, li { white-space: pre-wrap; }
         </sizepolicy>
        </property>
        <property name="editable">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>

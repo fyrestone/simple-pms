@@ -3,6 +3,8 @@
 #include "ui_mainwin.h"
 #include "../context/context.h"
 
+#include <QMessageBox>
+
 MainWinPrivate::MainWinPrivate(MainWin *parent) :
     task(DataEngine::Task::instance()),
     q(parent),
@@ -30,6 +32,8 @@ void MainWinPrivate::initializeMember()
 
     connect(addGradeAct, SIGNAL(triggered()), this, SLOT(showAddGradeWizard()));
     connect(addClassAct, SIGNAL(triggered()), this, SLOT(showAddClassWizard()));
+    connect(delGradeAct, SIGNAL(triggered()), this, SLOT(deleteGradeClass()));
+    connect(delClassAct, SIGNAL(triggered()), this, SLOT(deleteGradeClass()));
 
     rootContextMenu.addAction(addGradeAct);
     gradeContextMenu.addAction(addClassAct);
@@ -109,6 +113,62 @@ void MainWinPrivate::showAddClassWizard()
 
         task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(
                     navigationTree, tr("驻马店第一初级中学"));
+    }
+}
+
+void MainWinPrivate::deleteGradeClass()
+{
+    QList<QTreeWidgetItem *> selectedItems = q->ui->navigationTree->selectedItems();
+
+    if(!selectedItems.isEmpty())
+    {
+        static const QString requestComformTemplate = tr("确定删除 %1 ？");   //请求确认字符串模板
+        QString requestComformStr;                                          //请求确认字符串
+        QTreeWidgetItem *deleteItem = selectedItems[0];                     //待删除节点指针
+
+        /* 根据待删除节点类型构建请求确认字符串 */
+        switch(deleteItem->type())
+        {
+        case DataEngine::Root:  //根节点
+            //空，不允许删除根
+            break;
+        case DataEngine::Grade: //年级节点
+            {
+                QString gradeStr = deleteItem->data(0, Qt::UserRole).toString() + tr("级");
+                requestComformStr = requestComformTemplate.arg(gradeStr);
+            }
+            break;
+        case DataEngine::Class: //班级节点
+            {
+                QTreeWidgetItem *gradeParent = deleteItem->parent();
+
+                if(gradeParent)
+                {
+                    QString gradeStr = gradeParent->data(0, Qt::UserRole).toString() + tr("年级");
+                    QString classStr = deleteItem->data(0, Qt::UserRole).toString() + tr("班");
+
+                    requestComformStr = requestComformTemplate.arg(gradeStr + classStr);
+                }
+            }
+            break;
+        }
+
+        /* 若构建请求确认字符串成功，弹出请求确认对话框 */
+        if(!requestComformStr.isEmpty())
+        {
+            QMessageBox requestComformDlg(q);
+
+            requestComformDlg.setWindowTitle(tr("确认删除"));
+            requestComformDlg.setText(requestComformStr);
+            requestComformDlg.addButton(tr("删除"), QMessageBox::AcceptRole);
+            requestComformDlg.addButton(tr("取消"), QMessageBox::RejectRole);
+            requestComformDlg.setIcon(QMessageBox::Question);
+
+            if(requestComformDlg.exec() == QMessageBox::AcceptRole)
+                qDebug() << "Accepted!";
+            else
+                qDebug() << "Canceled!";
+        }
     }
 }
 

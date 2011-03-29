@@ -388,6 +388,35 @@ bool InsertOrUpdateClassTask::run(int gradeNum, int classNum, int classTypeID)
     return success;
 }
 
+DeleteClassTask::DeleteClassTask(QObject *parent) :
+    AbstractTask<DeleteClassTask, DeleteClass, bool>(parent)
+{
+    setRunEntry(&DeleteClassTask::run);
+}
+
+bool DeleteClassTask::run(int gradeNum, int classNum)
+{
+    static const QString deleteGradeClass = tr(
+                "DELETE FROM GradeClass WHERE grade = :grade and class = :class"
+                );
+
+    bool success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(deleteGradeClass))
+    {
+        sql.bindValue(":grade", gradeNum);
+        sql.bindValue(":class", classNum);
+
+        success = sql.exec();
+    }
+
+    PRINT_RUN_THREAD();
+
+    return success;
+}
+
 FillAccountsListModelTask::FillAccountsListModelTask(QObject *parent) :
     AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>(parent)
 {

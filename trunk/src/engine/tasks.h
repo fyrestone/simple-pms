@@ -22,6 +22,7 @@ namespace DataEngine
         InitializeDB,                       ///< 创建数据库连接->创建表->填充初始化数据
         Login,                              ///< 登陆
         InsertOrUpdateClass,                ///< 插入或更新班级
+        DeleteClass,                        ///< 删除班级
         FillAccountsListModel,              ///< 填充账号列表模型
         FillNavigationTree,                 ///< 填充班级树模型
         FillGradeList,                      ///< 填充年级列表
@@ -67,6 +68,14 @@ namespace DataEngine
         InsertOrUpdateClassTask(QObject *parent = 0);
 
         bool run(int gradeNum, int classNum, int classTypeID = 0);
+    };
+
+    class DeleteClassTask : public AbstractTask<DeleteClassTask, DeleteClass, bool>
+    {
+    public:
+        DeleteClassTask(QObject *parent = 0);
+
+        bool run(int gradeNum, int classNum);
     };
 
     class FillAccountsListModelTask : public AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>
