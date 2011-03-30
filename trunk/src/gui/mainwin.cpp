@@ -122,19 +122,21 @@ void MainWinPrivate::deleteGradeClass()
 
     if(!selectedItems.isEmpty())
     {
-        static const QString requestComformTemplate = tr("确定删除 %1 ？");   //请求确认字符串模板
-        QString requestComformStr;                                          //请求确认字符串
-        QTreeWidgetItem *deleteItem = selectedItems[0];                     //待删除节点指针
+        static const QString requestComformTemplate = tr("确定删除 %1 ？");      //请求确认字符串模板
+        QTreeWidgetItem *deleteItem = selectedItems[0];                         //待删除节点指针
+        QString requestComformStr;                                              //请求确认字符串
+        int deleteGradeNum = INVALID_GRADE_NUM;                                 //待删除年级号
+        int deleteClassNum = INVALID_CLASS_NUM;                                 //待删除班级号
 
         /* 根据待删除节点类型构建请求确认字符串 */
         switch(deleteItem->type())
         {
         case DataEngine::Root:  //根节点
-            //空，不允许删除根
             break;
         case DataEngine::Grade: //年级节点
             {
-                QString gradeStr = deleteItem->data(0, Qt::UserRole).toString() + tr("级");
+                deleteGradeNum = deleteItem->data(0, Qt::UserRole).toInt();
+                QString gradeStr = QString::number(deleteGradeNum) + tr("级");
                 requestComformStr = requestComformTemplate.arg(gradeStr);
             }
             break;
@@ -144,9 +146,10 @@ void MainWinPrivate::deleteGradeClass()
 
                 if(gradeParent)
                 {
-                    QString gradeStr = gradeParent->data(0, Qt::UserRole).toString() + tr("年级");
-                    QString classStr = deleteItem->data(0, Qt::UserRole).toString() + tr("班");
-
+                    deleteGradeNum = gradeParent->data(0, Qt::UserRole).toInt();
+                    deleteClassNum = deleteItem->data(0, Qt::UserRole).toInt();
+                    QString gradeStr = QString::number(deleteGradeNum) + tr("年级");
+                    QString classStr = QString::number(deleteClassNum) + tr("班");
                     requestComformStr = requestComformTemplate.arg(gradeStr + classStr);
                 }
             }
@@ -165,9 +168,13 @@ void MainWinPrivate::deleteGradeClass()
             requestComformDlg.setIcon(QMessageBox::Question);
 
             if(requestComformDlg.exec() == QMessageBox::AcceptRole)
-                qDebug() << "Accepted!";
-            else
-                qDebug() << "Canceled!";
+            {
+                QPointer<QTreeWidget> navigationTree = q->ui->navigationTree;
+
+                task->lookup<DataEngine::DeleteClassTask>()->run(deleteGradeNum, deleteClassNum);
+                task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(
+                            navigationTree, tr("驻马店第一初级中学"));
+            }
         }
     }
 }
