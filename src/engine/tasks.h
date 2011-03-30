@@ -17,6 +17,9 @@ class QTreeWidget;
 
 namespace DataEngine
 {
+    #define INVALID_GRADE_NUM -1            ///< 无效年级号
+    #define INVALID_CLASS_NUM -1            ///< 无效班级号
+
     enum Tasks                              ///  任务枚举
     {
         InitializeDB,                       ///< 创建数据库连接->创建表->填充初始化数据
@@ -75,7 +78,7 @@ namespace DataEngine
     public:
         DeleteClassTask(QObject *parent = 0);
 
-        bool run(int gradeNum, int classNum);
+        bool run(int gradeNum, int classNum = INVALID_CLASS_NUM);
     };
 
     class FillAccountsListModelTask : public AbstractTask<FillAccountsListModelTask, FillAccountsListModel, bool>

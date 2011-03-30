@@ -399,12 +399,24 @@ bool DeleteClassTask::run(int gradeNum, int classNum)
     static const QString deleteGradeClass = tr(
                 "DELETE FROM GradeClass WHERE grade = :grade and class = :class"
                 );
+    static const QString deleteGrade = tr(
+                "DELETE FROM GradeClass WHERE grade = :grade"
+                );
 
     bool success = false;
 
     QSqlQuery sql(QSqlDatabase::database());
 
-    if(sql.prepare(deleteGradeClass))
+    if(classNum == INVALID_CLASS_NUM)
+    {
+        if(sql.prepare(deleteGrade))
+        {
+            sql.bindValue(":grade", gradeNum);
+
+            success = sql.exec();
+        }
+    }
+    else if(sql.prepare(deleteGradeClass))
     {
         sql.bindValue(":grade", gradeNum);
         sql.bindValue(":class", classNum);
