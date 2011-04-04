@@ -29,15 +29,18 @@ void MainWinPrivate::initializeMember()
     QAction *addClassAct = new QAction(tr("添加班级"), this);
     QAction *delClassAct = new QAction(tr("删除班级"), this);
     QAction *modClassTypeAct = new QAction(tr("修改班级类型"), this);
+    QAction *addStudentsAct = new QAction(tr("管理学生"), this);
 
     connect(addGradeAct, SIGNAL(triggered()), this, SLOT(showAddGradeWizard()));
     connect(addClassAct, SIGNAL(triggered()), this, SLOT(showAddClassWizard()));
     connect(delGradeAct, SIGNAL(triggered()), this, SLOT(deleteGradeClass()));
     connect(delClassAct, SIGNAL(triggered()), this, SLOT(deleteGradeClass()));
+    connect(addStudentsAct, SIGNAL(triggered()), this, SLOT(showStudentMgmtDlg()));
 
     rootContextMenu.addAction(addGradeAct);
     gradeContextMenu.addAction(addClassAct);
     gradeContextMenu.addAction(delGradeAct);
+    classContextMenu.addAction(addStudentsAct);
     classContextMenu.addAction(modClassTypeAct);
     classContextMenu.addAction(delClassAct);
 
@@ -114,6 +117,14 @@ void MainWinPrivate::showAddClassWizard()
         task->lookup<DataEngine::FillNavigationTreeTask>()->asyncRun(
                     navigationTree, tr("驻马店第一初级中学"));
     }
+}
+
+void MainWinPrivate::showStudentMgmtDlg()
+{
+    StudentMgmtDlg studentMgmtDlg(q);
+
+    studentMgmtDlg.exec();
+    //refresh current tab page
 }
 
 void MainWinPrivate::deleteGradeClass()

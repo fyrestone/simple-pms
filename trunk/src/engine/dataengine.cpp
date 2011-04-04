@@ -17,6 +17,7 @@ Task::Task()
     registerTask(FillGradeList,         new FillGradeListTask(this));
     registerTask(FillClassList,         new FillClassListTask(this));
     registerTask(FillClassTypeListModel,new FillClassTypeListModelTask(this));
+    registerTask(FillStudentMgmtModel,  new FillStudentMgmtModelTask(this));
 }
 
 Task *Task::instance()

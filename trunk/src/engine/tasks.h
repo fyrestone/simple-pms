@@ -4,6 +4,7 @@
 #include "tasktemplate.h"
 
 #include <QObject>
+#include <QSharedData>
 #include <QPointer>
 #include <QList>
 #include <QSqlRecord>
@@ -12,6 +13,7 @@
 #include <QFutureWatcher>
 #include <QFutureSynchronizer>
 
+class QAbstractTableModel;
 class QStandardItemModel;
 class QTreeWidget;
 
@@ -26,11 +28,14 @@ namespace DataEngine
         Login,                              ///< 登陆
         InsertOrUpdateClass,                ///< 插入或更新班级
         DeleteClass,                        ///< 删除班级
+        DeleteStudentMgmtModel,                      ///< 删除学生信息
         FillAccountsListModel,              ///< 填充账号列表模型
         FillNavigationTree,                 ///< 填充班级树模型
         FillGradeList,                      ///< 填充年级列表
         FillClassList,                      ///< 填充班级列表
-        FillClassTypeListModel              ///< 填充班级类型列表模型
+        FillClassTypeListModel,             ///< 填充班级类型列表模型
+        FillStudentMgmtModel,               ///< 填充学生管理表模型
+        UpdateStudentMgmtModel              ///< 插入或更新学生信息
     };
 
     enum NavigationItemType
@@ -39,6 +44,21 @@ namespace DataEngine
         Root = 1001,                        ///< 根节点
         Grade = 1002,                       ///< 年级节点
         Class = 1003                        ///< 班级节点
+    };
+
+    struct StudentInfo : public QSharedData
+    {
+        StudentInfo() :
+            gradeNum(INVALID_GRADE_NUM),
+            classNum(INVALID_CLASS_NUM)
+        {
+        }
+
+        QString id;
+        QString sex;
+        QString name;
+        int gradeNum;
+        int classNum;
     };
 
     class InitializeDBTask : public AbstractTask<InitializeDBTask, InitializeDB, bool>
@@ -169,6 +189,41 @@ namespace DataEngine
     private slots:
         void initModel(QPointer<QStandardItemModel> model);
         void recvData(QPointer<QStandardItemModel> model, const QSqlRecord &record);
+    };
+
+    class FillStudentMgmtModelTask : public AbstractTask<FillStudentMgmtModelTask, FillStudentMgmtModel, bool>
+    {
+        Q_OBJECT
+
+    public:
+        FillStudentMgmtModelTask(QObject *parent = 0);
+
+        bool run(QPointer<QAbstractTableModel> model, int gradeNum, int classNum);
+
+    signals:
+        void querySuccess(QPointer<QAbstractTableModel> model);
+        void sendData(QPointer<QAbstractTableModel> model, const QVariant &tableRecord);
+        void queryComplete(QPointer<QAbstractTableModel> model);
+
+    private slots:
+        void initModel(QPointer<QAbstractTableModel> model);
+        void recvData(QPointer<QAbstractTableModel> model, const QVariant &tableRecord);
+        void fillHeader(QPointer<QAbstractTableModel> model);
+    };
+
+    class UpdateStudentMgmtModelTask : public AbstractTask<UpdateStudentMgmtModelTask, UpdateStudentMgmtModel, bool>
+    {
+    public:
+        UpdateStudentMgmtModelTask(QObject *parent = 0);
+
+        bool run(QPointer<QAbstractTableModel> model, const StudentInfo &info);
+    };
+
+    class DeleteStudentMgmtModelTask : public AbstractTask<DeleteStudentMgmtModelTask, DeleteStudentMgmtModel, bool>
+    {
+        DeleteStudentMgmtModelTask(QObject *parent = 0);
+
+        bool run(QPointer<QAbstractTableModel> model, int studentID);
     };
 }
 
