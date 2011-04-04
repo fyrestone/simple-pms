@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     gui/selectgradewizardpage.cpp \
     gui/inputclassinfowizardpage.cpp \
     gui/inputgradeinfowizardpage.cpp \
-    engine/tasks.cpp
+    engine/tasks.cpp \
+    gui/studentmgmtdlg.cpp
 
 HEADERS  += pch.h \
     gui/logindlg.h \
@@ -53,18 +54,20 @@ HEADERS  += pch.h \
     engine/tasks.h \
     engine/tasktemplate.h \
     gui/inputclassinfowizardpage_p.h \
-    gui/selectgradewizardpage_p.h
+    gui/selectgradewizardpage_p.h \
+    gui/studentmgmtdlg.h \
+    gui/studentmgmtdlg_p.h
 
 FORMS    += gui/logindlg.ui \
     gui/mainwin.ui \
     gui/tabpage.ui \
     gui/aboutdlg.ui \
-    gui/classmgmtdlg.ui \
     gui/addclasswizard.ui \
     gui/addgradewizard.ui \
     gui/selectgradewizardpage.ui \
     gui/inputclassinfowizardpage.ui \
-    gui/inputgradeinfowizardpage.ui
+    gui/inputgradeinfowizardpage.ui \
+    gui/studentmgmtdlg.ui
 
 RC_FILE = ../info/info.rc
 

@@ -2,6 +2,7 @@
 #define MAINWIN_P_H
 
 #include "aboutdlg.h"               /* 使用AboutDlg */
+#include "studentmgmtdlg.h"         /* 使用StudentMgmtDlg */
 #include "addgradewizard.h"         /* 使用AddGradeWizard */
 #include "addclasswizard.h"         /* 使用AddClassWizard */
 #include "../engine/dataengine.h"   /* 使用Task */
@@ -28,6 +29,7 @@ private slots:
     void showNavigationContextMenu(const QPoint &pos);
     void showAddGradeWizard();
     void showAddClassWizard();
+    void showStudentMgmtDlg();
     void deleteGradeClass();
 
 private:

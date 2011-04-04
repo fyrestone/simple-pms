@@ -1,6 +1,18 @@
+/*!
+\file task.cpp
+\author Liubao
+\version 1.0
+\date 2011/4/4
+\brief 所有业务逻辑实现
+
+\warning 由于业务逻辑可能同步执行也可能异步执行，所有需要使用指针的业务逻辑，都需要：
+1、使用安全指针如QPointer、QWeakPointer
+2、即使使用安全指针，该指针也不可在异步线程中解引用
+3、必须使用信号-槽传递该指针（使用自动信号-槽捆绑），并在槽中对其解引用
+4、在使用该指针槽中，必须解引用前使用RETURN_IF_FAIL来测试该指针
+*/
 #include "tasks.h"
 #include "../context/context.h"
-
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
@@ -28,8 +40,12 @@ using namespace DataEngine;
 /* 注册信号/槽参数类型 */
 int i1 = qRegisterMetaType<QSqlRecord>("QSqlRecord");
 int i2 = qRegisterMetaType< QPointer<QStandardItemModel> >("QPointer<QStandardItemModel>");
-int i3 = qRegisterMetaType< QPointer<QTreeWidget> >("QPointer<QTreeWidget>");
-int i4 = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");
+int i3 = qRegisterMetaType< QPointer<QAbstractTableModel> >("QPointer<QAbstractTableModel>");
+int i4 = qRegisterMetaType< QPointer<QTreeWidget> >("QPointer<QTreeWidget>");
+int i5 = qRegisterMetaType< QList<QSqlRecord> >("QList<QSqlRecord>");
+
+/* 注册QVariant支持类型 */
+Q_DECLARE_METATYPE(QList<QSqlRecord>);
 
 InitializeDBTask::InitializeDBTask(QObject *parent) :
     AbstractTask<InitializeDBTask, InitializeDB, bool>(parent)
@@ -76,13 +92,13 @@ bool InitializeDBTask::createTable()
             );
     static const QString createStudentsTable = tr(
             "CREATE TABLE IF NOT EXISTS Students ("
-                "student_id INTEGER NOT NULL,"
-                "sex NCHAR(1) NOT NULL,"
-                "name NVARCHAR(15) NOT NULL,"
+                "student_id INTEGER PRIMARY KEY NOT NULL,"
+                "id NVARCHAR(20),"
+                "sex NCHAR(1),"
+                "name NVARCHAR(15),"
                 "grade INTEGER,"
                 "class INTEGER,"
                 "in_school INTEGER NOT NULL DEFAULT 1,"
-                "PRIMARY KEY(student_id),"
                 "FOREIGN KEY(grade, class) REFERENCES GradeClass(grade, class) ON DELETE SET NULL ON UPDATE CASCADE,"
                 "CHECK(sex IN ('男', '女')))"
             );
@@ -762,4 +778,113 @@ void FillClassTypeListModelTask::recvData(QPointer<QStandardItemModel> model, co
     row.append(new QStandardItem(record.value(0).toString()));     //班级类型序号
 
     model->appendRow(row);
+}
+
+FillStudentMgmtModelTask::FillStudentMgmtModelTask(QObject *parent) :
+    AbstractTask<FillStudentMgmtModelTask, FillStudentMgmtModel, bool>(parent)
+{
+    setRunEntry(&FillStudentMgmtModelTask::run);
+
+    connect(this,       SIGNAL(querySuccess(QPointer<QAbstractTableModel>)),
+            this,       SLOT(initModel(QPointer<QAbstractTableModel>)));
+    connect(this,       SIGNAL(sendData(QPointer<QAbstractTableModel>,QVariant)),
+            this,       SLOT(recvData(QPointer<QAbstractTableModel>,QVariant)));
+    connect(this,       SIGNAL(queryComplete(QPointer<QAbstractTableModel>)),
+            this,       SLOT(fillHeader(QPointer<QAbstractTableModel>)));
+}
+
+bool FillStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, int gradeNum, int classNum)
+{
+    static const QString studentInfoQuery = tr(
+            "SELECT * FROM Students WHERE grade = :grade and class = :class"
+            );
+
+    int success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(studentInfoQuery))
+    {
+        sql.bindValue(":grade", gradeNum);
+        sql.bindValue(":class", classNum);
+
+        if(sql.exec())
+        {
+            QList<QSqlRecord> tableRecord;
+
+            emit querySuccess(model);
+            while(sql.next()) tableRecord.push_back(sql.record());
+            emit sendData(model, QVariant::fromValue(tableRecord));
+            emit queryComplete(model);
+
+            success = true;
+        }
+    }
+
+    PRINT_RUN_THREAD();
+
+    return success;
+}
+
+void FillStudentMgmtModelTask::initModel(QPointer<QAbstractTableModel> model)
+{
+    RETURN_IF_FAIL(model);
+
+    model->submit();
+}
+
+void FillStudentMgmtModelTask::recvData(QPointer<QAbstractTableModel> model, const QVariant &tableRecord)
+{
+    RETURN_IF_FAIL(model);
+
+    model->setData(QModelIndex(), tableRecord, Qt::UserRole);
+}
+
+void FillStudentMgmtModelTask::fillHeader(QPointer<QAbstractTableModel> model)
+{
+    RETURN_IF_FAIL(model);
+
+    model->setHeaderData(0, Qt::Horizontal, tr("学号"));
+    model->setHeaderData(1, Qt::Horizontal, tr("性别"));
+    model->setHeaderData(2, Qt::Horizontal, tr("姓名"));
+    model->setHeaderData(3, Qt::Horizontal, tr("年级"));
+    model->setHeaderData(4, Qt::Horizontal, tr("班级"));
+}
+
+UpdateStudentMgmtModelTask::UpdateStudentMgmtModelTask(QObject *parent) :
+    AbstractTask<UpdateStudentMgmtModelTask, UpdateStudentMgmtModel, bool>(parent)
+{
+    setRunEntry(&UpdateStudentMgmtModelTask::run);
+}
+
+bool UpdateStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, const StudentInfo &info)
+{
+    static const QString insertOrUpdateStudentInfo = tr(
+                "INSERT INTO Students(student_id, id, sex, name, grade, class, in_school)"
+                "VALUES (:student_id, :id, :sex, :name, :grade, :class, :in_school)"
+                );
+
+    bool success = false;
+
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(insertOrUpdateStudentInfo))
+    {
+
+    }
+
+    return success;
+}
+
+DeleteStudentMgmtModelTask::DeleteStudentMgmtModelTask(QObject *parent) :
+    AbstractTask<DeleteStudentMgmtModelTask, DeleteStudentMgmtModel, bool>(parent)
+{
+
+}
+
+bool DeleteStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, int studentID)
+{
+    bool success = false;
+
+    return success;
 }
