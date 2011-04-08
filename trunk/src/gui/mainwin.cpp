@@ -28,20 +28,18 @@ void MainWinPrivate::initializeMember()
     QAction *delGradeAct = new QAction(tr("删除年级"), this);
     QAction *addClassAct = new QAction(tr("添加班级"), this);
     QAction *delClassAct = new QAction(tr("删除班级"), this);
-    QAction *modClassTypeAct = new QAction(tr("修改班级类型"), this);
-    QAction *addStudentsAct = new QAction(tr("管理学生"), this);
+    QAction *mgmtClassAct = new QAction(tr("管理学生"), this);
 
     connect(addGradeAct, SIGNAL(triggered()), this, SLOT(showAddGradeWizard()));
     connect(addClassAct, SIGNAL(triggered()), this, SLOT(showAddClassWizard()));
     connect(delGradeAct, SIGNAL(triggered()), this, SLOT(deleteGradeClass()));
     connect(delClassAct, SIGNAL(triggered()), this, SLOT(deleteGradeClass()));
-    connect(addStudentsAct, SIGNAL(triggered()), this, SLOT(showStudentMgmtDlg()));
+    connect(mgmtClassAct, SIGNAL(triggered()), this, SLOT(showClassMgmtDlg()));
 
     rootContextMenu.addAction(addGradeAct);
     gradeContextMenu.addAction(addClassAct);
     gradeContextMenu.addAction(delGradeAct);
-    classContextMenu.addAction(addStudentsAct);
-    classContextMenu.addAction(modClassTypeAct);
+    classContextMenu.addAction(mgmtClassAct);
     classContextMenu.addAction(delClassAct);
 
     q->ui->centralTabwidget->setCornerWidget(&addTabButton, Qt::TopLeftCorner);
@@ -119,12 +117,25 @@ void MainWinPrivate::showAddClassWizard()
     }
 }
 
-void MainWinPrivate::showStudentMgmtDlg()
+void MainWinPrivate::showClassMgmtDlg()
 {
-    StudentMgmtDlg studentMgmtDlg(q);
+    QList<QTreeWidgetItem *> selectedItems = q->ui->navigationTree->selectedItems();
 
-    studentMgmtDlg.exec();
-    //refresh current tab page
+    if(!selectedItems.isEmpty())
+    {
+        QTreeWidgetItem *classItem = selectedItems[0];                         //待删除节点指针
+        QTreeWidgetItem *gradeItem = classItem->parent();
+
+        if(classItem->type() == DataEngine::Class && gradeItem->type() == DataEngine::Grade)
+        {
+            int mgmtGradeNum = gradeItem->data(0, Qt::UserRole).toInt();
+            int mgmtClassNum = classItem->data(0, Qt::UserRole).toInt();
+
+            ClassMgmtDlg classMgmtDlg(mgmtGradeNum, mgmtClassNum, q);
+
+            classMgmtDlg.exec();
+        }
+    }
 }
 
 void MainWinPrivate::deleteGradeClass()

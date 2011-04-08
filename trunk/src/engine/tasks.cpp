@@ -796,7 +796,7 @@ FillStudentMgmtModelTask::FillStudentMgmtModelTask(QObject *parent) :
 bool FillStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, int gradeNum, int classNum)
 {
     static const QString studentInfoQuery = tr(
-            "SELECT * FROM Students WHERE grade = :grade and class = :class"
+            "SELECT student_id, id, sex, name FROM Students WHERE grade = :grade and class = :class"
             );
 
     int success = false;
@@ -830,7 +830,7 @@ void FillStudentMgmtModelTask::initModel(QPointer<QAbstractTableModel> model)
 {
     RETURN_IF_FAIL(model);
 
-    model->submit();
+    model->setData(QModelIndex(), QVariant(), Qt::UserRole);
 }
 
 void FillStudentMgmtModelTask::recvData(QPointer<QAbstractTableModel> model, const QVariant &tableRecord)
@@ -844,47 +844,98 @@ void FillStudentMgmtModelTask::fillHeader(QPointer<QAbstractTableModel> model)
 {
     RETURN_IF_FAIL(model);
 
-    model->setHeaderData(0, Qt::Horizontal, tr("学号"));
-    model->setHeaderData(1, Qt::Horizontal, tr("性别"));
-    model->setHeaderData(2, Qt::Horizontal, tr("姓名"));
-    model->setHeaderData(3, Qt::Horizontal, tr("年级"));
-    model->setHeaderData(4, Qt::Horizontal, tr("班级"));
+    model->setHeaderData(0, Qt::Horizontal, tr("编号"));
+    model->setHeaderData(1, Qt::Horizontal, tr("学号"));
+    model->setHeaderData(2, Qt::Horizontal, tr("性别"));
+    model->setHeaderData(3, Qt::Horizontal, tr("姓名"));
 }
 
-UpdateStudentMgmtModelTask::UpdateStudentMgmtModelTask(QObject *parent) :
-    AbstractTask<UpdateStudentMgmtModelTask, UpdateStudentMgmtModel, bool>(parent)
+InsertRowStudentMgmtModelTask::InsertRowStudentMgmtModelTask(QObject *parent) :
+    AbstractTask<InsertRowStudentMgmtModelTask, InsertRowStudentMgmtModel, bool>(parent)
 {
-    setRunEntry(&UpdateStudentMgmtModelTask::run);
+    //不提供异步调用
 }
 
-bool UpdateStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, const StudentInfo &info)
+bool InsertRowStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, int gradeNum, int classNum, int row)
 {
-    static const QString insertOrUpdateStudentInfo = tr(
+    static const QString insertNULLStudentInfo = tr(
                 "INSERT INTO Students(student_id, id, sex, name, grade, class, in_school)"
-                "VALUES (:student_id, :id, :sex, :name, :grade, :class, :in_school)"
+                "VALUES (NULL, NULL, NULL, NULL, :gradeNum, :classNum, 0)"
                 );
 
     bool success = false;
 
     QSqlQuery sql(QSqlDatabase::database());
 
-    if(sql.prepare(insertOrUpdateStudentInfo))
+    if(sql.prepare(insertNULLStudentInfo))
     {
+        sql.bindValue(":gradeNum", gradeNum);
+        sql.bindValue(":classNum", classNum);
 
+        if(sql.exec())
+        {
+            QVariant lastInsertStuID = sql.lastInsertId();
+
+            if(lastInsertStuID.type() == QVariant::LongLong)
+            {
+                model->insertRows(row, 1);
+                model->setData(model->index(row, 0), lastInsertStuID);
+
+                success = true;
+            }
+        }
     }
 
     return success;
 }
 
-DeleteStudentMgmtModelTask::DeleteStudentMgmtModelTask(QObject *parent) :
-    AbstractTask<DeleteStudentMgmtModelTask, DeleteStudentMgmtModel, bool>(parent)
+DeleteRowStudentMgmtModelTask::DeleteRowStudentMgmtModelTask(QObject *parent) :
+    AbstractTask<DeleteRowStudentMgmtModelTask, DeleteRowStudentMgmtModel, bool>(parent)
 {
-
+    //不提供异步调用
 }
 
-bool DeleteStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, int studentID)
+bool DeleteRowStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, int row)
 {
+    static const QString deleteStudentInfo = tr(
+                "DELETE FROM Students where student_id = :student_id"
+                );
+
     bool success = false;
 
+    QSqlQuery sql(QSqlDatabase::database());
+
+    if(sql.prepare(deleteStudentInfo))
+    {
+        QVariant deleteStuID = model->data(model->index(row, 0));
+
+        if(deleteStuID.isValid() && deleteStuID.type() == QVariant::LongLong)
+        {
+            sql.bindValue(":student_id", deleteStuID);
+
+            if(sql.exec())
+            {
+                model->removeRow(row);
+
+                success = true;
+            }
+        }
+    }
+
     return success;
+}
+
+UpdateStudentMgmtModelTask::UpdateStudentMgmtModelTask(QObject *parent) :
+    AbstractTask<UpdateStudentMgmtModelTask, UpdateStudentMgmtModel, bool>(parent)
+{
+    //不提供异步调用
+}
+
+bool UpdateStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, const QModelIndex &index, const QVariant &value)
+{
+    static const QString updateStudentInfo = tr(
+                "UPDATE Students SET "
+                );
+
+    return true;
 }

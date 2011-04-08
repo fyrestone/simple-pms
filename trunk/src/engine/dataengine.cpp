@@ -8,16 +8,18 @@ Q_GLOBAL_STATIC(Task, task)
 
 Task::Task()
 {
-    registerTask(InitializeDB,          new InitializeDBTask(this));
-    registerTask(Login,                 new LoginTask(this));
-    registerTask(InsertOrUpdateClass,   new InsertOrUpdateClassTask(this));
-    registerTask(DeleteClass,           new DeleteClassTask(this));
-    registerTask(FillAccountsListModel, new FillAccountsListModelTask(this));
-    registerTask(FillNavigationTree,    new FillNavigationTreeTask(this));
-    registerTask(FillGradeList,         new FillGradeListTask(this));
-    registerTask(FillClassList,         new FillClassListTask(this));
-    registerTask(FillClassTypeListModel,new FillClassTypeListModelTask(this));
-    registerTask(FillStudentMgmtModel,  new FillStudentMgmtModelTask(this));
+    registerTask(InitializeDB,              new InitializeDBTask(this));
+    registerTask(Login,                     new LoginTask(this));
+    registerTask(InsertOrUpdateClass,       new InsertOrUpdateClassTask(this));
+    registerTask(DeleteClass,               new DeleteClassTask(this));
+    registerTask(FillAccountsListModel,     new FillAccountsListModelTask(this));
+    registerTask(FillNavigationTree,        new FillNavigationTreeTask(this));
+    registerTask(FillGradeList,             new FillGradeListTask(this));
+    registerTask(FillClassList,             new FillClassListTask(this));
+    registerTask(FillClassTypeListModel,    new FillClassTypeListModelTask(this));
+    registerTask(FillStudentMgmtModel,      new FillStudentMgmtModelTask(this));
+    registerTask(InsertRowStudentMgmtModel, new InsertRowStudentMgmtModelTask(this));
+    registerTask(DeleteRowStudentMgmtModel, new DeleteRowStudentMgmtModelTask(this));
 }
 
 Task *Task::instance()
