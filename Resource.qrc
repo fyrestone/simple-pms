@@ -20,5 +20,8 @@
         <file>image/gear.png</file>
         <file>image/paste.png</file>
         <file>image/add.png</file>
+        <file>image/table_refresh.png</file>
+        <file>image/table_row_delete.png</file>
+        <file>image/table_row_insert.png</file>
     </qresource>
 </RCC>

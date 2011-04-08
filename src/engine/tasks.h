@@ -28,14 +28,15 @@ namespace DataEngine
         Login,                              ///< 登陆
         InsertOrUpdateClass,                ///< 插入或更新班级
         DeleteClass,                        ///< 删除班级
-        DeleteStudentMgmtModel,                      ///< 删除学生信息
         FillAccountsListModel,              ///< 填充账号列表模型
         FillNavigationTree,                 ///< 填充班级树模型
         FillGradeList,                      ///< 填充年级列表
         FillClassList,                      ///< 填充班级列表
         FillClassTypeListModel,             ///< 填充班级类型列表模型
-        FillStudentMgmtModel,               ///< 填充学生管理表模型
-        UpdateStudentMgmtModel              ///< 插入或更新学生信息
+        FillStudentMgmtModel,               ///< 填充学生信息表模型
+        InsertRowStudentMgmtModel,          ///< 插入行到学生信息表模型
+        DeleteRowStudentMgmtModel,          ///< 删除行从学生信息表模型
+        UpdateStudentMgmtModel              ///< 更新学生信息到数据库
     };
 
     enum NavigationItemType
@@ -44,21 +45,6 @@ namespace DataEngine
         Root = 1001,                        ///< 根节点
         Grade = 1002,                       ///< 年级节点
         Class = 1003                        ///< 班级节点
-    };
-
-    struct StudentInfo : public QSharedData
-    {
-        StudentInfo() :
-            gradeNum(INVALID_GRADE_NUM),
-            classNum(INVALID_CLASS_NUM)
-        {
-        }
-
-        QString id;
-        QString sex;
-        QString name;
-        int gradeNum;
-        int classNum;
     };
 
     class InitializeDBTask : public AbstractTask<InitializeDBTask, InitializeDB, bool>
@@ -211,19 +197,28 @@ namespace DataEngine
         void fillHeader(QPointer<QAbstractTableModel> model);
     };
 
+    class InsertRowStudentMgmtModelTask : public AbstractTask<InsertRowStudentMgmtModelTask, InsertRowStudentMgmtModel, bool>
+    {
+    public:
+        InsertRowStudentMgmtModelTask(QObject *parent = 0);
+
+        bool run(QPointer<QAbstractTableModel> model, int gradeNum, int classNum, int row);
+    };
+
+    class DeleteRowStudentMgmtModelTask : public AbstractTask<DeleteRowStudentMgmtModelTask, DeleteRowStudentMgmtModel, bool>
+    {
+    public:
+        DeleteRowStudentMgmtModelTask(QObject *parent = 0);
+
+        bool run(QPointer<QAbstractTableModel> model, int row);
+    };
+
     class UpdateStudentMgmtModelTask : public AbstractTask<UpdateStudentMgmtModelTask, UpdateStudentMgmtModel, bool>
     {
     public:
         UpdateStudentMgmtModelTask(QObject *parent = 0);
 
-        bool run(QPointer<QAbstractTableModel> model, const StudentInfo &info);
-    };
-
-    class DeleteStudentMgmtModelTask : public AbstractTask<DeleteStudentMgmtModelTask, DeleteStudentMgmtModel, bool>
-    {
-        DeleteStudentMgmtModelTask(QObject *parent = 0);
-
-        bool run(QPointer<QAbstractTableModel> model, int studentID);
+        bool run(QPointer<QAbstractTableModel> model, const QModelIndex &index, const QVariant &value);
     };
 }
 
