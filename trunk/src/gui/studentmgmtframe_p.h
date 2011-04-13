@@ -5,8 +5,22 @@
 
 #include <QtCore/QObject>               /* 继承自QObject */
 #include <QAbstractTableModel>          /* 继承自QAbstractTableModel */
+#include <QStyledItemDelegate>          /* 继承自QStyledItemDelegate */
 
 class StudentMgmtFrame;
+
+class SexDelegate : public QStyledItemDelegate
+{
+public:
+    SexDelegate(QObject *parent = 0);
+    ~SexDelegate();
+
+    QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+    void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+};
 
 class StudentMgmtModel : public QAbstractTableModel
 {
@@ -27,6 +41,7 @@ public:
 
 private:
     Q_DISABLE_COPY(StudentMgmtModel)
+    DataEngine::Task * const task;
     QList<QSqlRecord> tableData;
     QVector<QString> tableHeaderData;
 };

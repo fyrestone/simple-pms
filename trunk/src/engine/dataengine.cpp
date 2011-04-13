@@ -20,6 +20,7 @@ Task::Task()
     registerTask(FillStudentMgmtModel,      new FillStudentMgmtModelTask(this));
     registerTask(InsertRowStudentMgmtModel, new InsertRowStudentMgmtModelTask(this));
     registerTask(DeleteRowStudentMgmtModel, new DeleteRowStudentMgmtModelTask(this));
+    registerTask(UpdateStudentMgmtModel,    new UpdateStudentMgmtModelTask(this));
 }
 
 Task *Task::instance()
