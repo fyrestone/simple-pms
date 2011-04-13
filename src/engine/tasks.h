@@ -199,18 +199,34 @@ namespace DataEngine
 
     class InsertRowStudentMgmtModelTask : public AbstractTask<InsertRowStudentMgmtModelTask, InsertRowStudentMgmtModel, bool>
     {
+        Q_OBJECT
+
     public:
         InsertRowStudentMgmtModelTask(QObject *parent = 0);
 
         bool run(QPointer<QAbstractTableModel> model, int gradeNum, int classNum, int row);
+
+    signals:
+        void sendData(QPointer<QAbstractTableModel> model, int row, const QVariant &id);
+
+    private slots:
+        void recvData(QPointer<QAbstractTableModel> model, int row, const QVariant &id);
     };
 
     class DeleteRowStudentMgmtModelTask : public AbstractTask<DeleteRowStudentMgmtModelTask, DeleteRowStudentMgmtModel, bool>
     {
+        Q_OBJECT
+
     public:
         DeleteRowStudentMgmtModelTask(QObject *parent = 0);
 
         bool run(QPointer<QAbstractTableModel> model, int row);
+
+    signals:
+        void sendData(QPointer<QAbstractTableModel> model, int row);
+
+    private slots:
+        void recvData(QPointer<QAbstractTableModel> model, int row);
     };
 
     class UpdateStudentMgmtModelTask : public AbstractTask<UpdateStudentMgmtModelTask, UpdateStudentMgmtModel, bool>
