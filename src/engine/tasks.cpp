@@ -864,7 +864,7 @@ bool InsertRowStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, int
 {
     static const QString insertNULLStudentInfo = tr(
                 "INSERT INTO Students(student_id, id, sex, name, grade, class, in_school)"
-                "VALUES (NULL, NULL, NULL, NULL, :gradeNum, :classNum, 0)"
+                "VALUES (NULL, NULL, NULL, NULL, :gradeNum, :classNum, 1)"
                 );
 
     bool success = false;
@@ -973,7 +973,7 @@ bool UpdateStudentMgmtModelTask::run(QPointer<QAbstractTableModel> model, const 
             sql.bindValue(":updateValue", value);
             sql.bindValue(":student_id", id);
 
-            if(sql.exec()) success = true;
+            success = sql.exec();
         }
     }
 

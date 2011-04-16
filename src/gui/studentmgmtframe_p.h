@@ -6,6 +6,7 @@
 #include <QtCore/QObject>               /* 继承自QObject */
 #include <QAbstractTableModel>          /* 继承自QAbstractTableModel */
 #include <QStyledItemDelegate>          /* 继承自QStyledItemDelegate */
+#include <QSortFilterProxyModel>        /* 使用代理模型 */
 
 class StudentMgmtFrame;
 
@@ -46,6 +47,15 @@ private:
     QVector<QString> tableHeaderData;
 };
 
+class StudentMgmtProxyModel : public QSortFilterProxyModel
+{
+public:
+    StudentMgmtProxyModel(QObject * parent = 0);
+
+    bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+};
+
 class StudentMgmtFramePrivate : public QObject
 {
     Q_OBJECT
@@ -60,12 +70,14 @@ public:
 private slots:
     void insertRow();
     void deleteRow();
+    void refresh();
 
 private:
     Q_DISABLE_COPY(StudentMgmtFramePrivate)
     DataEngine::Task * const task;
     StudentMgmtFrame * const q;
     StudentMgmtModel model;
+    StudentMgmtProxyModel proxyModel;
     const int gradeNum;
     const int classNum;
 };
