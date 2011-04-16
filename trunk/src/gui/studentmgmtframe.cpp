@@ -4,6 +4,8 @@
 
 #include <QSqlField>
 #include <QToolBar>
+#include <QLabel>
+#include <QLineEdit>
 
 /* 注册QVariant支持类型 */
 Q_DECLARE_METATYPE(QList<QSqlRecord>);
@@ -214,6 +216,34 @@ bool StudentMgmtModel::removeRows(int row, int count, const QModelIndex &)
     return success;
 }
 
+StudentMgmtProxyModel::StudentMgmtProxyModel(QObject *parent) :
+    QSortFilterProxyModel(parent)
+{
+
+}
+
+bool StudentMgmtProxyModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
+{
+    if(source_column == 0) return false;//过滤掉（隐藏）第0列
+
+    return QSortFilterProxyModel::filterAcceptsColumn(source_column, source_parent);
+}
+
+bool StudentMgmtProxyModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    /* 关键词匹配忽略第0列 */
+    for(int column = 1; column < sourceModel()->columnCount(); ++column)
+    {
+        QModelIndex source_index = sourceModel()->index(source_row, column, source_parent);
+        QString key = sourceModel()->data(source_index, filterRole()).toString();
+
+        if(key.contains(filterRegExp()))
+            return true;
+    }
+
+    return false;
+}
+
 StudentMgmtFramePrivate::StudentMgmtFramePrivate(StudentMgmtFrame *parent, int gradeNum, int classNum) :
     task(DataEngine::Task::instance()),
     q(parent),
@@ -227,21 +257,36 @@ void StudentMgmtFramePrivate::initializeMember()
 {
     QAction *insertAct = new QAction(QIcon(tr(":/Icon/image/table_row_insert.png")), tr("插入行"), q);
     QAction *deleteAct = new QAction(QIcon(tr(":/Icon/image/table_row_delete.png")), tr("删除行"), q);
+    QAction *refreshAct = new QAction(QIcon(tr(":/Icon/image/table_refresh.png")), tr("刷新"), q);
+    QLabel *filterLabel = new QLabel(tr("过滤："), q);
+    QLineEdit *filterLineEdit = new QLineEdit(q);
 
-    connect(insertAct, SIGNAL(triggered()), this, SLOT(insertRow()));
-    connect(deleteAct, SIGNAL(triggered()), this, SLOT(deleteRow()));
+    connect(insertAct,          SIGNAL(triggered()),
+            this,               SLOT(insertRow()));
+    connect(deleteAct,          SIGNAL(triggered()),
+            this,               SLOT(deleteRow()));
+    connect(refreshAct,         SIGNAL(triggered()),
+            this,               SLOT(refresh()));
+    connect(filterLineEdit,     SIGNAL(textChanged(QString)),
+            &proxyModel,        SLOT(setFilterFixedString(QString)));               //使用QRegExp::FixedString匹配关键词
 
-    q->ui->toobar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+    q->ui->toobar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);                //设置按钮为图标文字并排
     q->ui->toobar->addAction(insertAct);
     q->ui->toobar->addAction(deleteAct);
+    q->ui->toobar->addAction(refreshAct);
+    q->ui->toobar->addWidget(filterLabel);
+    q->ui->toobar->addWidget(filterLineEdit);
 
-    task->lookup<DataEngine::FillStudentMgmtModelTask>()->syncRun(
-                QPointer<QAbstractTableModel>(&model), gradeNum, classNum);
+    task->lookup<DataEngine::FillStudentMgmtModelTask>()->asyncRun(
+                QPointer<QAbstractTableModel>(&model), gradeNum, classNum);         //异步填充表模型
 
-    q->ui->studentView->setModel(&model);
-    q->ui->studentView->hideColumn(0);
-    q->ui->studentView->setItemDelegateForColumn(2, new SexDelegate(this));
-    q->ui->studentView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    proxyModel.setFilterKeyColumn(-1);                                              //设置关键词匹配所有列
+    proxyModel.setDynamicSortFilter(true);                                          //源模型改变代理模型自动更新
+    proxyModel.setSourceModel(&model);                                              //设置源模型
+
+    q->ui->studentView->setModel(&proxyModel);                                      //设置代理模型到表视图
+    q->ui->studentView->setItemDelegateForColumn(1, new SexDelegate(this));         //刷新模型不影响Delegate
+    q->ui->studentView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);    //列扩展
 }
 
 void StudentMgmtFramePrivate::connectSignalsAndSlots()
@@ -262,13 +307,20 @@ void StudentMgmtFramePrivate::insertRow()
 
 void StudentMgmtFramePrivate::deleteRow()
 {
-    const QModelIndex deleteIndex = q->ui->studentView->currentIndex();
+    const QModelIndex proxyIndex = q->ui->studentView->currentIndex();
+    const QModelIndex sourceIndex = proxyModel.mapToSource(proxyIndex);
 
-    if(deleteIndex.isValid())
+    if(sourceIndex.isValid())
     {
         task->lookup<DataEngine::DeleteRowStudentMgmtModelTask>()->run(
-                    QPointer<QAbstractTableModel>(&model), deleteIndex.row());
+                    QPointer<QAbstractTableModel>(&model), sourceIndex.row());
     }
+}
+
+void StudentMgmtFramePrivate::refresh()
+{
+    task->lookup<DataEngine::FillStudentMgmtModelTask>()->asyncRun(
+                QPointer<QAbstractTableModel>(&model), gradeNum, classNum);
 }
 
 StudentMgmtFrame::StudentMgmtFrame(int gradeNum, int classNum, QWidget *parent) :
